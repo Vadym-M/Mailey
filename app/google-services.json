@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "124139653928",
+    "firebase_url": "https://smart-messenger-d3069-default-rtdb.firebaseio.com",
+    "project_id": "smart-messenger-d3069",
+    "storage_bucket": "smart-messenger-d3069.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124139653928:android:4b932dd84c36bfb6a3de1d",
+        "android_client_info": {
+          "package_name": "com.devx.mailey"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "124139653928-0r49qculqci64ap6ea4slc7v2cesik8u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOb9ZBVjoe7_myH2_KIXXwYyOvR9LCyAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "124139653928-0r49qculqci64ap6ea4slc7v2cesik8u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
