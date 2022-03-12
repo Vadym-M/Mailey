@@ -54,6 +54,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-database-ktx'
+    implementation 'com.google.firebase:firebase-storage-ktx'
 
     //Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt'

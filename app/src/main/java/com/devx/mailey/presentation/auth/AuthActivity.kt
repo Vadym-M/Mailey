@@ -12,7 +12,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class AuthActivity : AppCompatActivity() {
 
-    private val viewModel: AuthViewModel by viewModels()
     lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,8 +20,6 @@ class AuthActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.authFragmentContainer, WelcomeFragment())
             .commit()
-
-
     }
 
 }

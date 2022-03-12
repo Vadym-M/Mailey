@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.devx.mailey">
-
+    
+    <permission android:name="android.permission.INTERNET"/>
+    
     <application
         android:name=".di.App"
         android:allowBackup="true"
@@ -24,7 +26,7 @@
         </activity>
         <activity
             android:name=".presentation.auth.AuthActivity"
-            android:exported="false"></activity>
+            android:exported="false" />
     </application>
 
 </manifest>

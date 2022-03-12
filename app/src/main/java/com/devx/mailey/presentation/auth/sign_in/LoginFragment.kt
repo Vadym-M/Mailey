@@ -2,23 +2,21 @@ package com.devx.mailey.presentation.auth.sign_in
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.devx.mailey.databinding.FragmentLoginBinding
 import com.devx.mailey.presentation.auth.AuthState
 import com.devx.mailey.presentation.auth.AuthViewModel
-import com.devx.mailey.presentation.auth.StateObserver
+import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class LoginFragment : Fragment(), StateObserver {
+class LoginFragment : Fragment(), AuthStateObserver {
 
     lateinit var binding: FragmentLoginBinding
     private val viewModel: AuthViewModel by viewModels()
