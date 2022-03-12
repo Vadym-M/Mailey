@@ -2,6 +2,7 @@ package com.devx.mailey.presentation.auth
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import com.devx.mailey.R
 import com.devx.mailey.databinding.ActivityMainBinding
@@ -17,10 +18,11 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         supportFragmentManager.beginTransaction()
             .replace(R.id.authFragmentContainer, WelcomeFragment())
             .commit()
 
+
     }
+
 }

@@ -1,22 +1,28 @@
 package com.devx.mailey.presentation.auth.sign_up
 
+import android.content.Intent
 import android.os.Binder
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.devx.mailey.R
 import com.devx.mailey.databinding.FragmentRegisterBinding
+import com.devx.mailey.presentation.auth.AuthState
 import com.devx.mailey.presentation.auth.AuthViewModel
+import com.devx.mailey.presentation.auth.StateObserver
+import com.devx.mailey.presentation.core.CoreActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class RegisterFragment : Fragment() {
+class RegisterFragment : Fragment(), StateObserver{
 
-    lateinit var binding: FragmentRegisterBinding
+    private lateinit var binding: FragmentRegisterBinding
     private val viewModel: AuthViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,21 +30,28 @@ class RegisterFragment : Fragment() {
     ): View {
         binding = FragmentRegisterBinding.inflate(inflater, container, false)
         register()
-        toastListener()
-        progressBar()
+        authStateObserver()
         return binding.root
     }
 
-    //private fun
-    private fun progressBar(){
-        viewModel.progressBar.observe(viewLifecycleOwner){
-            binding.registerProgressBar.visibility = it
-        }
-    }
+    override fun authStateObserver() {
+        viewModel.authState.observe(viewLifecycleOwner) {
+            when (it) {
+                is AuthState.Success -> {
+                    binding.registerProgressBar.visibility = View.GONE
+                    val intent = Intent(requireContext(), CoreActivity::class.java)
+                    requireContext().startActivity(intent)
+                    activity?.finish()
+                }
+                is AuthState.Error -> {
+                    binding.registerProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
 
-    private fun toastListener() {
-        viewModel.toastMsg.observe(viewLifecycleOwner){
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                }
+                is AuthState.Loading -> {
+                    binding.registerProgressBar.visibility = View.VISIBLE
+                }
+            }
         }
     }
 

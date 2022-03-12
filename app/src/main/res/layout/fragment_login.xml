@@ -8,13 +8,13 @@
     tools:context=".presentation.auth.sign_in.LoginFragment">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/passwordRegister"
+        android:id="@+id/passwordLogin"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
         android:layout_marginBottom="40dp"
-        app:layout_constraintBottom_toTopOf="@+id/welcomeSignInBtn"
+        app:layout_constraintBottom_toTopOf="@+id/loginSignInBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.505"
         app:layout_constraintStart_toStartOf="parent">
@@ -26,13 +26,13 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/emailRegister"
+        android:id="@+id/emailLogin"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:hint="Email"
-        app:layout_constraintBottom_toTopOf="@+id/passwordRegister"
+        app:layout_constraintBottom_toTopOf="@+id/passwordLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent">
@@ -48,13 +48,13 @@
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:src="@drawable/ic_rocket_svgrepo_com"
-        app:layout_constraintBottom_toTopOf="@+id/emailRegister"
+        app:layout_constraintBottom_toTopOf="@+id/emailLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/welcomeSignInBtn"
+        android:id="@+id/loginSignInBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign In"
@@ -62,5 +62,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/loginProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
