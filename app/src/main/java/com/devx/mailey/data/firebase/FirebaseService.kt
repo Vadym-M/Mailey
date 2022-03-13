@@ -8,10 +8,17 @@ import kotlinx.coroutines.flow.Flow
 
 interface FirebaseService {
 
+//    auth functions
     suspend fun  register(fullName: String, email:String, password:String): Flow<AuthState<AuthResult>>
     suspend fun  login(email:String, password:String): Flow<AuthState<AuthResult>>
+
+//    user functions
     suspend fun getUser(): FirebaseUser?
     fun  signOut(): Boolean
-    fun loadImage(uri: Uri)
+    suspend fun getRooms()
 
+
+//    messages
+    fun writeMessage()
+    fun loadImage(uri: Uri)
 }
