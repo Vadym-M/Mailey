@@ -1,6 +1,8 @@
 package com.devx.mailey.data.firebase
 
 import android.net.Uri
+import com.devx.mailey.data.model.Message
+import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.presentation.auth.AuthState
 import com.google.firebase.auth.AuthResult
@@ -64,6 +66,20 @@ class FirebaseSource : FirebaseService {
     override fun loadImage(uri: Uri){
         val ref = storageRef.child("test")
         ref.putFile(uri)
+    }
+
+    fun writeMessage(nameUser: String, message: Message, room: Room) {
+        val key = database.child("messages").push().key ?: return
+    }
+
+    override suspend fun getRooms() = flow {
+        emit(AuthState.Loading(null))
+
+        try {
+            var result = database.child("rooms").get()
+        } catch (e: Exception) {
+            error("bug")
+        }
     }
 
 }
