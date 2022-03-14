@@ -1,9 +1,7 @@
 package com.devx.mailey.presentation.core.profile
 
-import android.app.Activity
-import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
+import android.icu.number.NumberRangeFormatter.with
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -12,23 +10,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
-import com.devx.mailey.R
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.devx.mailey.databinding.FragmentProfileBinding
 import com.devx.mailey.presentation.auth.AuthActivity
-import com.devx.mailey.presentation.auth.AuthViewModel
+import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.File
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
     lateinit var binding: FragmentProfileBinding
-    private val profileViewModel: ProfileViewModel by viewModels()
+    private val viewModel: ProfileViewModel by viewModels()
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        profileViewModel.loadImage(uri!!)
+        viewModel.loadImage(uri)
     }
 
 
@@ -50,8 +47,36 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        loadImageObserver()
+    }
+
+    private fun loadImageObserver() {
+        viewModel.onLoadImage.observe(viewLifecycleOwner){ res ->
+            when(res){
+                is ResultState.Success ->{
+                    Log.d("glide", res.result.toString())
+                    Glide.with(this)
+                        .load(res.result)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .into(binding.profileImageView)
+                    binding.profileProgressBar.visibility = View.GONE
+                }
+                is ResultState.Error ->{
+                    Toast.makeText(requireContext(), res.msg, Toast.LENGTH_LONG).show()
+                    binding.profileProgressBar.visibility = View.GONE
+                }
+                is ResultState.Loading ->{
+                    binding.profileProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
     private fun signOutObserver() {
-        profileViewModel.onSignOut.observe(viewLifecycleOwner) { state ->
+        viewModel.onSignOut.observe(viewLifecycleOwner) { state ->
             if (state) {
                 val intent = Intent(requireContext(), AuthActivity::class.java)
                 requireContext().startActivity(intent)
@@ -63,7 +88,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun signOut() {
-        profileViewModel.signOut()
+        viewModel.signOut()
     }
 
     private fun selectImage() {

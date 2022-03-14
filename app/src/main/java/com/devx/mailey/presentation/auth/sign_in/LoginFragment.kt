@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.devx.mailey.databinding.FragmentLoginBinding
-import com.devx.mailey.presentation.auth.AuthState
+import com.devx.mailey.util.ResultState
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
@@ -39,20 +39,20 @@ class LoginFragment : Fragment(), AuthStateObserver {
     }
 
     override fun authStateObserver() {
-        viewModel.authState.observe(viewLifecycleOwner) {
+        viewModel.resultState.observe(viewLifecycleOwner) {
             when (it) {
-                is AuthState.Success -> {
+                is ResultState.Success -> {
                     binding.loginProgressBar.visibility = View.GONE
                     val intent = Intent(requireContext(), CoreActivity::class.java)
                     requireContext().startActivity(intent)
                     activity?.finish()
                 }
-                is AuthState.Error -> {
+                is ResultState.Error -> {
                     binding.loginProgressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
 
                 }
-                is AuthState.Loading -> {
+                is ResultState.Loading -> {
                     binding.loginProgressBar.visibility = View.VISIBLE
                 }
             }
