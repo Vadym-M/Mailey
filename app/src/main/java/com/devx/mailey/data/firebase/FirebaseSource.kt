@@ -79,12 +79,32 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
     }
 
-    fun writeMessage(nameUser: String, message: Message, room: Room) {
-        val key = database.child("messages").push().key ?: return
+    override fun writeMessage(nameUser: String, message: Message, room: Room): Boolean {
+        return try {
+            room.roomId?.let { database.child("rooms").child(it).setValue(message) }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    override suspend fun getRooms() {}
-    override fun writeMessage(user: User, message: Message, room: Room) {}
+    override suspend fun getRoomById(roomId: String): ResultState<Room> {
+        return try {
+            val result = database.child("rooms").child(roomId).get().await().getValue(Room::class.java)
+            ResultState.Success(result)
+        } catch (e: Exception) {
+            ResultState.Error(e.message)
+        }
+    }
 
+    override fun createRoom(room: Room): Boolean {
+        return try {
+            room.roomId?.let { database.child("rooms").child(it).setValue(room) }
+            true
+        } catch (e: Exception) {
+
+            false
+        }
+    }
 }
 
