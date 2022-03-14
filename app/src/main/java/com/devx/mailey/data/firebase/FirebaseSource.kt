@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
-class FirebaseSource : FirebaseService {
+object FirebaseSource : AuthService, StorageService, DatabaseService {
     private val firebaseAuth: FirebaseAuth by lazy { Firebase.auth }
     private val database: DatabaseReference by lazy { Firebase.database.reference }
     private val storageRef: StorageReference by lazy { Firebase.storage.reference }
@@ -63,7 +63,7 @@ class FirebaseSource : FirebaseService {
         }
     }
 
-    override fun loadImage(uri: Uri){
+    override fun loadImage(uri: Uri) {
         val ref = storageRef.child("test")
         ref.putFile(uri)
     }
@@ -72,15 +72,8 @@ class FirebaseSource : FirebaseService {
         val key = database.child("messages").push().key ?: return
     }
 
-    override suspend fun getRooms() = flow {
-        emit(AuthState.Loading(null))
-
-        try {
-            var result = database.child("rooms").get()
-        } catch (e: Exception) {
-            error("bug")
-        }
-    }
+    override suspend fun getRooms() {}
+    override fun writeMessage(user: User, message: Message, room: Room) {}
 
 }
 

@@ -1,8 +1,9 @@
 package com.devx.mailey.di
 
-import android.app.Application
-import com.devx.mailey.data.firebase.FirebaseService
+import com.devx.mailey.data.firebase.AuthService
+import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.firebase.FirebaseSource
+import com.devx.mailey.data.firebase.StorageService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +16,21 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseInstance(): FirebaseService{
-        return FirebaseSource()
+    fun provideFirebaseAuthInstance(): AuthService {
+        return FirebaseSource
     }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseStorageInstance(): StorageService {
+        return FirebaseSource
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseDatabaseInstance(): DatabaseService {
+        return FirebaseSource
+    }
+
+
 }
