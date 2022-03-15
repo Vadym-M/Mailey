@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,6 +18,10 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
+    init {
+        Log.d("repo", authRepository.hashCode().toString())
+    }
+
 
     private val _authState = MutableLiveData<ResultState<AuthResult>>()
     val resultState: LiveData<ResultState<AuthResult>>

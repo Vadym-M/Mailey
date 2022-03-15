@@ -6,5 +6,6 @@ import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.flow.Flow
 
 interface StorageService {
-    suspend fun loadImage(uri: Uri): Flow<ResultState<StorageReference>>
+    suspend fun loadImage(uri: Uri): Flow<ResultState<String>>
+    suspend fun deleteImage(ref:StorageReference)
 }
