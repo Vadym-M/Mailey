@@ -1,6 +1,8 @@
 package com.devx.mailey.presentation.core.profile
 
 import android.net.Uri
+import android.util.Log
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -22,9 +24,14 @@ class ProfileViewModel @Inject constructor(
     private val storageRepository: StorageRepository
 ) : ViewModel() {
 
+
     private val _userData = MutableLiveData<User>()
     val userData: LiveData<User>
         get() = _userData
+
+    private val _saveBtnVisible = MutableLiveData<Int>()
+    val saveBtnVisible: LiveData<Int>
+        get() = _saveBtnVisible
 
 
     private val _onSignOut = MutableLiveData<Boolean>()
@@ -50,9 +57,11 @@ class ProfileViewModel @Inject constructor(
     fun getCurrentUserData() = viewModelScope.launch {
         val user = databaseRepository.getCurrentUserData()
         _userData.postValue(user)
-
     }
 
+    fun addImageToUser(url:String) = viewModelScope.launch{
+        databaseRepository.addImageUrl(url)
+    }
 
 
 }

@@ -2,6 +2,7 @@ package com.devx.mailey.presentation.core
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import com.devx.mailey.R
 import com.devx.mailey.databinding.ActivityCoreBinding
@@ -17,7 +18,6 @@ class CoreActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         if(savedInstanceState == null){
             showFragment(HomeFragment())
         }

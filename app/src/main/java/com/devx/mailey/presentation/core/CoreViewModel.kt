@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devx.mailey.data.repository.DatabaseRepository
@@ -11,9 +12,8 @@ import javax.inject.Inject
 class CoreViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) : ViewModel(){
 
     //val userData
-
     init {
-        getCurrentUserData()
+        Log.d("viewModel", databaseRepository.hashCode().toString())
     }
 
     private fun getCurrentUserData() = viewModelScope.launch{

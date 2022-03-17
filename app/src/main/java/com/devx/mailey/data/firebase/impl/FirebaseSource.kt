@@ -1,7 +1,9 @@
-package com.devx.mailey.data.firebase
+package com.devx.mailey.data.firebase.impl
 
 import android.net.Uri
-import android.util.Log
+import com.devx.mailey.data.firebase.AuthService
+import com.devx.mailey.data.firebase.DatabaseService
+import com.devx.mailey.data.firebase.StorageService
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
@@ -24,7 +26,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     private val database: DatabaseReference by lazy { Firebase.database.reference }
     private val storageRef: StorageReference by lazy { Firebase.storage.reference }
 
-    private var currentUser: User? = null
+    lateinit var currentUserRef: DatabaseReference
 
     override suspend fun register(
         fullName: String,
@@ -36,10 +38,15 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             result.user?.uid.let { id ->
-                val user = User(fullName = fullName, email = email, id = id.toString(), null, mutableListOf())
+                val user = User(
+                    fullName = fullName,
+                    email = email,
+                    id = id.toString(),
+                    null,
+                    mutableListOf()
+                )
                 database.child("users").child(id.toString()).setValue(user)
             }.await()
-            currentUser = getCurrentUserData()
             emit(ResultState.Success(result))
         } catch (e: Exception) {
             emit(ResultState.Error(e.message))
@@ -51,7 +58,6 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
             emit(ResultState.Loading(null))
             try {
                 val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-                currentUser = getCurrentUserData()
                 emit(ResultState.Success(result))
             } catch (e: Exception) {
                 emit(ResultState.Error(e.message))
@@ -59,9 +65,10 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
 
     override suspend fun getUser(): FirebaseUser? {
-        currentUser = getCurrentUserData()
+        initUser(firebaseAuth.currentUser!!.uid)
         return firebaseAuth.currentUser
     }
+
     override fun signOut(): Boolean {
         return try {
             firebaseAuth.signOut()
@@ -71,20 +78,16 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
     }
 
-    override suspend fun loadImage(uri: Uri): Flow<ResultState<String>> = flow{
-        firebaseAuth.currentUser?.let { user->
+    override suspend fun loadImage(uri: Uri): Flow<ResultState<String>> = flow {
+        firebaseAuth.currentUser?.let { user ->
             emit(ResultState.Loading(null))
             try {
                 val ref = storageRef.child(user.uid).child(uri.lastPathSegment.toString())
                 ref.putFile(uri).await()
-
                 val url = ref.downloadUrl.await().toString()
-                val list = currentUser?.imagesUrl
-                list?.add(url)
-                updateImagesUrl(list!!)
                 emit(ResultState.Success(url))
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 emit(ResultState.Error(e.message))
             }
 
@@ -102,14 +105,27 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     override suspend fun getRooms() {}
     override fun writeMessage(user: User, message: Message, room: Room) {}
     override suspend fun getCurrentUserData(): User? {
-        return database.child("users").child(firebaseAuth.currentUser!!.uid).get().await()
-            .getValue(User::class.java)
+        return CurrentUser.init.get().await().getValue(User::class.java)
     }
 
     override suspend fun updateImagesUrl(urls: List<String>) {
-        database.child("users").child(currentUser!!.id).child("imagesUrl").setValue(urls).await()
+        CurrentUser.imagesUrl.setValue(urls).await()
+        //database.child("users").child(currentUser!!.id).child("imagesUrl").setValue(urls).await()
     }
 
+    private fun initUser(id: String) {
+        currentUserRef = database.child("users").child(id)
+    }
 
 }
+
+class CurrentUser {
+    companion object {
+        val init = FirebaseSource.currentUserRef
+        val imagesUrl = init.child("imagesUrl")
+    }
+}
+
+
+
 

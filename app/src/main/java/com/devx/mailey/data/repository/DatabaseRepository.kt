@@ -19,4 +19,10 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
   }
   return userMutex.withLock { this.currentUser!! }
  }
+
+ suspend fun addImageUrl(url: String){
+  val urls = currentUser?.imagesUrl
+  val res = if(urls?.add(url) == true) urls else listOf(url)
+  databaseService.updateImagesUrl(res)
+ }
 }
