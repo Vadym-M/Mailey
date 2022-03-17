@@ -1,6 +1,7 @@
 package com.devx.mailey.data.firebase.impl
 
 import android.net.Uri
+import android.util.Log
 import com.devx.mailey.data.firebase.AuthService
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.firebase.StorageService
@@ -12,7 +13,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
@@ -119,6 +120,23 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
 
     override fun createRoom(room: Room): Boolean {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun searchUserByName(str: String): Flow<ResultState<List<User>>> = flow {
+        emit(ResultState.Loading(null))
+        try {
+            val list = mutableListOf<User>()
+            val response = database.child("users").get().await().children
+            for (i in response) {
+                val user = i.getValue(User::class.java)!!
+                if (user.fullName.lowercase().contains(str)) {
+                    list.add(user)
+                }
+            }
+            emit(ResultState.Success(list))
+        } catch (e: Exception) {
+            emit(ResultState.Error(e.message))
+        }
     }
 
     private fun initUser(id: String) {

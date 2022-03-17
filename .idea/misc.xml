@@ -3,15 +3,20 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_magnify.xml" value="0.243" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_core.xml" value="0.23697916666666666" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_splash.xml" value="0.23697916666666666" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_home.xml" value="0.23697916666666666" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_login.xml" value="0.36666666666666664" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_profile.xml" value="0.3898488120950324" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_register.xml" value="0.36666666666666664" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_search.xml" value="0.2546875" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/fragment_welcome.xml" value="0.36666666666666664" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/item_recycler_user.xml" value="0.536" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.225" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/menu/navigation.xml" value="0.23697916666666666" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/menu/search_to_app_bar.xml" value="0.23697916666666666" />
       </map>
     </option>
   </component>

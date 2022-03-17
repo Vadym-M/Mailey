@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import com.devx.mailey.databinding.FragmentProfileBinding
 import com.devx.mailey.presentation.auth.AuthActivity
 import com.devx.mailey.presentation.core.CoreActivity
+import com.devx.mailey.util.Constants
 import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -111,7 +112,7 @@ class ProfileFragment : Fragment() {
                     .into(binding.profileImage)
             }else{
                 Glide.with(this)
-                    .load("https://firebasestorage.googleapis.com/v0/b/smart-messenger-d3069.appspot.com/o/default%2Fcat.jpg?alt=media&token=0dc5eded-d682-4cd5-8b7e-a2f082f7e099")
+                    .load(Constants.IMAGE_BLANK_URL)
                     .centerCrop()
                     .into(binding.profileImage)
             }

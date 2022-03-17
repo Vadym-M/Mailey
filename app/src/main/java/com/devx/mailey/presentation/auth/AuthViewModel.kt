@@ -18,9 +18,6 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    init {
-        Log.d("repo", authRepository.hashCode().toString())
-    }
 
 
     private val _authState = MutableLiveData<ResultState<AuthResult>>()
@@ -42,7 +39,7 @@ class AuthViewModel @Inject constructor(
         }
     }
     fun getUser() = viewModelScope.launch {
-        delay(2000)
+        delay(1000)
         val user = authRepository.getUser()
         _user.postValue(user)
     }

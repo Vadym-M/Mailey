@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Custom.MaterialSearchBarLight" parent="MaterialSearchBarLight">
+        <item name="mt_searchBarColor">@color/green_dark</item>
+        <item name="mt_navIconTint">@color/white</item>
+        <item name="mt_searchIconTint">@color/white</item>
+        <item name="mt_clearIconTint">@color/white</item>
+        <item name="mt_menuIconTint">@color/white</item>
+        <item name="mt_backIconTint">@color/white</item>
+        <item name="mt_textCursorTint">@color/searchBarCursorColor</item>
+        <item name="mt_textColor">@color/white</item>
+        <item name="mt_hintColor">@color/white</item>
+        <item name="mt_placeholderColor">@color/white</item>
+        <item name="mt_highlightedTextColor">@color/searchBarTextHighlightColor</item>
+    </style>
+</resources>

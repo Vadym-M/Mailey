@@ -79,4 +79,7 @@ dependencies {
     //Material Design
     implementation 'com.google.android.material:material:1.5.0'
 
+    //searchView
+    implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
+
 }
