@@ -98,19 +98,27 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         ref.delete().await()
     }
 
-    fun writeMessage(nameUser: String, message: Message, room: Room) {
-        val key = database.child("messages").push().key ?: return
-    }
 
     override suspend fun getRooms() {}
     override fun writeMessage(user: User, message: Message, room: Room) {}
+    override fun writeMessage(nameUser: String, message: Message, room: Room): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getCurrentUserData(): User? {
         return CurrentUser.init.get().await().getValue(User::class.java)
     }
 
     override suspend fun updateImagesUrl(urls: List<String>) {
         CurrentUser.imagesUrl.setValue(urls).await()
-        //database.child("users").child(currentUser!!.id).child("imagesUrl").setValue(urls).await()
+    }
+
+    override suspend fun getRoomById(roomId: String): ResultState<Room> {
+        TODO("Not yet implemented")
+    }
+
+    override fun createRoom(room: Room): Boolean {
+        TODO("Not yet implemented")
     }
 
     private fun initUser(id: String) {
