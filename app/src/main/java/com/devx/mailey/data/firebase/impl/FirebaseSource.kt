@@ -1,7 +1,7 @@
 package com.devx.mailey.data.firebase.impl
 
 import android.net.Uri
-import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.AuthService
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.firebase.StorageService
@@ -15,10 +15,12 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
@@ -114,12 +116,13 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         CurrentUser.imagesUrl.setValue(urls).await()
     }
 
-    override suspend fun getRoomById(roomId: String): ResultState<Room> {
-        TODO("Not yet implemented")
+    override suspend fun getRoomById(roomId: String): Room {
+        return database.child("rooms").child(roomId).get().await().getValue(Room::class.java)!!
     }
 
-    override fun createRoom(room: Room): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun createRoom(room: Room): Boolean {
+        database.child("rooms").child(room.roomId).setValue(room)
+        return true
     }
 
     override suspend fun searchUserByName(str: String): Flow<ResultState<List<User>>> = flow {
@@ -139,9 +142,53 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
     }
 
+    override suspend fun pushRoomIdToUser(roomId: String, userId: String) {
+        val key = database.child("users").child(userId).child("rooms").push().key
+        val values = mapOf("/users/$userId/rooms/$key" to roomId)
+        database.updateChildren(values)
+    }
+
+    override suspend fun isRoomExist(roomId: String): Boolean {
+       return database.child("rooms").child(roomId).get().await().exists()
+    }
+
+    override suspend fun pushMessage(roomId: String, msg: Message) {
+        val key = database.child("rooms").child(roomId).child("messages").push().key
+        val value = mapOf("/rooms/$roomId/messages/$key" to msg)
+        database.updateChildren(value)
+    }
+
+    override fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>) {
+       database.child("rooms").child("YLbPiWXbUuZXihZxPFOt6iPSUVC6").child("messages").addChildEventListener( object : ChildEventListener{
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+               val msg = snapshot.getValue<Message>()!!
+                val key = snapshot.key.toString()!!
+                val test = mutableMapOf<String, Message>(key to msg)
+                liveData.postValue(test)
+
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+    }
+
+
     private fun initUser(id: String) {
         currentUserRef = database.child("users").child(id)
     }
+
 
 }
 

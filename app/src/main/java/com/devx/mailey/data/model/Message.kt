@@ -1,5 +1,10 @@
 package com.devx.mailey.data.model
 
-data class Message(val text : String, val userName: String) {
-    constructor(): this("", "")
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class Message(val id:String, val text : String, val userId:String, val timestamp: String, val imageUrl:String?, val userName:String) :
+    Parcelable {
+    constructor(): this("","", "", "","","")
 }

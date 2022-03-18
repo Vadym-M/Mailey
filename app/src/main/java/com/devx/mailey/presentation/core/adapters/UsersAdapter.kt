@@ -1,4 +1,4 @@
-package com.devx.mailey.presentation.core.search
+package com.devx.mailey.presentation.core.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -12,8 +12,14 @@ import com.devx.mailey.databinding.ItemRecyclerUserBinding
 import com.devx.mailey.util.Constants
 
 class UsersAdapter() : RecyclerView.Adapter<UsersAdapter.ViewHolder>() {
-    inner class ViewHolder(val binding: ItemRecyclerUserBinding): RecyclerView.ViewHolder(binding.root)  {
 
+    var onItemClick: ((User) -> Unit)? = null
+    inner class ViewHolder(val binding: ItemRecyclerUserBinding): RecyclerView.ViewHolder(binding.root)  {
+        init {
+            binding.itemUserMessageBtn.setOnClickListener {
+                onItemClick?.invoke(users[adapterPosition])
+            }
+        }
     }
     private val diffCallback = object : DiffUtil.ItemCallback<User>(){
         override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {

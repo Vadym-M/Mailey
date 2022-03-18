@@ -1,19 +1,24 @@
 package com.devx.mailey.presentation.core.search
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devx.mailey.R
+import com.devx.mailey.data.model.User
 import com.devx.mailey.databinding.FragmentSearchBinding
-import com.devx.mailey.databinding.FragmentWelcomeBinding
+import com.devx.mailey.presentation.core.CoreViewModel
+import com.devx.mailey.presentation.core.adapters.UsersAdapter
+import com.devx.mailey.presentation.core.chat.ChatFragment
+import com.devx.mailey.util.Constants
 import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,9 +36,15 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        viewModel.getCurrentUser()
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerViewInit()
+        adapterClickListener()
+        onRoomObserver()
         binding.searchBar.addTextChangeListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
@@ -72,5 +83,23 @@ class SearchFragment : Fragment() {
             }
         }
     }
+    private fun onRoomObserver(){
+        viewModel.onRoomCreated.observe(viewLifecycleOwner){ event->
+            event.getContentIfNotHandled()?.let {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.coreFragmentContainer, ChatFragment.newInstance(it.first, it.second))
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+    }
+
+    private fun adapterClickListener() {
+        usersAdapter.onItemClick = { user ->
+            viewModel.createRoomId(user)
+        }
+
+    }
+
 
 }

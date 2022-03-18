@@ -1,22 +1,18 @@
 package com.devx.mailey.presentation.core
 
-import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.devx.mailey.data.repository.DatabaseRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
-import javax.inject.Inject
+import com.devx.mailey.data.model.User
 
-@HiltViewModel
-class CoreViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) : ViewModel(){
 
-    //val userData
-    init {
-        Log.d("viewModel", databaseRepository.hashCode().toString())
+class CoreViewModel: ViewModel(){
+    private val _users = MutableLiveData<Map<Int,User>>()
+    val users : LiveData<Map<Int,User>>
+    get() = _users
+
+    fun setUsersForChat(users: Map<Int,User>){
+        _users.postValue(users)
     }
 
-    private fun getCurrentUserData() = viewModelScope.launch{
-        databaseRepository.getCurrentUserData()
-    }
 }
