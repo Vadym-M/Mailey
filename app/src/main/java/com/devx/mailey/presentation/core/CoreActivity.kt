@@ -13,9 +13,21 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class CoreActivity : AppCompatActivity() {
+    private val coreViewModel: CoreViewModel by viewModels()
     lateinit var binding: ActivityCoreBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        coreViewModel.fetchCurrentUser()
+
+        coreViewModel.onFragmentChanged.observe(this){ fragment->
+            if (fragment != null) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.coreFragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
         binding = ActivityCoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
         if(savedInstanceState == null){

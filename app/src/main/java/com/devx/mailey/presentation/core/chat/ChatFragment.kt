@@ -1,24 +1,22 @@
 package com.devx.mailey.presentation.core.chat
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.devx.mailey.data.model.Message
-import com.devx.mailey.data.model.Room
-import com.devx.mailey.data.model.User
 import com.devx.mailey.databinding.FragmentChatBinding
+import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.presentation.core.adapters.ChatAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
-    private val viewModel: ChatViewModel by activityViewModels()
+    private val viewModel: ChatViewModel by viewModels()
+    private val coreViewModel: CoreViewModel by activityViewModels()
     lateinit var binding: FragmentChatBinding
     private val usersAdapter = ChatAdapter()
     override fun onCreateView(
@@ -31,18 +29,17 @@ class ChatFragment : Fragment() {
 
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        val roomId = arguments?.getString("roomId")!!
-        val userId = arguments?.getString("userId")!!
-        viewModel.initRoom(roomId, userId)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val data = coreViewModel.getStringPair()!!
+        viewModel.initRoom(data.first, data.second)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.sendBtn.setOnClickListener {
 
-                viewModel.sendMessage(binding.chatEditText.text.toString())
+            viewModel.sendMessage(binding.chatEditText.text.toString())
 
         }
         binding.chatRecycler.apply {
@@ -55,20 +52,11 @@ class ChatFragment : Fragment() {
         messageListener()
     }
 
-    private fun messageListener(){
-        viewModel.onMessageAdded.observe(viewLifecycleOwner){
+    private fun messageListener() {
+        viewModel.onMessageAdded.observe(viewLifecycleOwner) {
             usersAdapter.messeges = it
             binding.chatRecycler.smoothScrollToPosition(0)
         }
     }
 
-    companion object{
-        @JvmStatic
-        fun newInstance(roomId: String, userId: String) = ChatFragment().apply {
-            arguments = Bundle().apply {
-                putString("roomId", roomId)
-                putString("userId", userId)
-            }
-        }
-    }
 }

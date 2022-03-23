@@ -25,16 +25,14 @@ class SearchViewModel @Inject constructor(
     val searchedUsers: LiveData<ResultState<List<User>>>
     get() = _searchedUsers
 
-    private val _currentUser = MutableLiveData<User>()
-    private val currentUser: LiveData<User>
-        get() = _currentUser
 
     private val _onRoomCreated = MutableLiveData<Event<Pair<String, String>>>()
     val onRoomCreated: LiveData<Event<Pair<String, String>>>
         get() = _onRoomCreated
 
+
     fun searchUserByName(str: String) {
-        if (str.isNotBlank() && currentUser.value != null) {
+        if (str.isNotBlank()) {
             searchJob?.cancel()
             searchJob = viewModelScope.launch {
                 databaseRepository.searchUserByName(str).collect {
@@ -46,49 +44,14 @@ class SearchViewModel @Inject constructor(
             _searchedUsers.postValue(ResultState.Success(emptyList()))
         }
     }
-    fun getCurrentUser() = viewModelScope.launch{
-        val user = databaseRepository.getCurrentUserData()
-            Log.d("user", user.rooms?.values.toString())
-        _currentUser.postValue(user)
-    }
 
-    fun createRoomId(leftUser: User){
-        val leftId = leftUser.id.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
-        val rightUser = currentUser.value!!
-        val rightId = rightUser.id.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
+    fun createRoomId(leftUserId: String, rightUserId: String){
+        val leftId = leftUserId.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
+        val rightId = rightUserId.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
         if(leftId < rightId){
-            _onRoomCreated.postValue(Event(Pair(leftUser.id.take(14) + rightUser.id.take(14), leftUser.id)))
+            _onRoomCreated.postValue(Event(Pair(leftUserId.take(14) + rightUserId.take(14), leftUserId)))
         }else{
-            _onRoomCreated.postValue(Event(Pair(rightUser.id.take(14) + leftUser.id.take(14), leftUser.id)))
+            _onRoomCreated.postValue(Event(Pair(rightUserId.take(14) + leftUserId.take(14), leftUserId)))
         }
-//        viewModelScope.launch {
-//            val rightUser = currentUser.value!!
-//            val roomId = leftUser.id.take(14) + rightUser.id.take(14)
-//            val otherId = rightUser.id.take(14) + leftUser.id.take(14)
-//            val res1 = async { databaseRepository.isRoomExist(roomId) }.await()
-//            val res2 = async { databaseRepository.isRoomExist(otherId) }.await()
-//
-//            if(res1){
-//
-//               if(rightUser.rooms.isNullOrEmpty() || !rightUser.rooms.values.contains(roomId)){
-//                   async { databaseRepository.pushRoomIdToUser(roomId, rightUser.id) }
-//               }
-//            }else if(res2){
-//
-//                if(rightUser.rooms.isNullOrEmpty() || !rightUser.rooms.values.contains(otherId)){
-//                    async { databaseRepository.pushRoomIdToUser(otherId, rightUser.id) }
-//                }
-//            }else{
-//
-//                val room = Room(HashMap(), roomId, leftUser.id, rightUser.id)
-//                async { databaseRepository.createRoom(room)}
-//                async { databaseRepository.pushRoomIdToUser(roomId, rightUser.id) }
-//
-//            }
-//        }
-    }
-//    private suspend fun getRoom(roomId:String)= viewModelScope.launch {
-//        val result = databaseRepository.getRoomById(roomId)
-//        _onRoomCreated.postValue(Event(result))
-//    }
-}
+
+}}

@@ -1,24 +1,21 @@
 package com.devx.mailey.presentation.core.profile
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.devx.mailey.databinding.FragmentProfileBinding
 import com.devx.mailey.presentation.auth.AuthActivity
 import com.devx.mailey.presentation.core.CoreActivity
+import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.util.Constants
 import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,17 +24,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
     lateinit var binding: FragmentProfileBinding
-    private val viewModel: ProfileViewModel by activityViewModels()
+    private val viewModel: ProfileViewModel by viewModels()
+    private val coreViewModel: CoreViewModel by activityViewModels()
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             viewModel.loadImage(uri)
         }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        viewModel.getCurrentUserData()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,7 +54,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loadImageObserver()
-        saveBtnObserver()
+
     }
 
     private fun loadImageObserver() {
@@ -100,7 +93,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun userDataObserver() {
-        viewModel.userData.observe(viewLifecycleOwner) { user ->
+        coreViewModel.user.observe(viewLifecycleOwner) { user ->
             binding.apply {
                 profileEmail.editText?.setText(user.email)
                 profileFullName.editText?.setText(user.fullName)
@@ -110,7 +103,7 @@ class ProfileFragment : Fragment() {
                     .load(user.imagesUrl.last())
                     .centerCrop()
                     .into(binding.profileImage)
-            }else{
+            } else {
                 Glide.with(this)
                     .load(Constants.IMAGE_BLANK_URL)
                     .centerCrop()
@@ -152,12 +145,6 @@ class ProfileFragment : Fragment() {
             profileHelp.setOnClickListener {
                 // go to fragment
             }
-        }
-    }
-
-    private fun saveBtnObserver() {
-        viewModel.saveBtnVisible.observe(viewLifecycleOwner) {
-            binding.profileSaveChanges.visibility = it
         }
     }
 

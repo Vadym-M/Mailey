@@ -24,16 +24,6 @@ class ProfileViewModel @Inject constructor(
     private val storageRepository: StorageRepository
 ) : ViewModel() {
 
-
-    private val _userData = MutableLiveData<User>()
-    val userData: LiveData<User>
-        get() = _userData
-
-    private val _saveBtnVisible = MutableLiveData<Int>()
-    val saveBtnVisible: LiveData<Int>
-        get() = _saveBtnVisible
-
-
     private val _onSignOut = MutableLiveData<Boolean>()
     val onSignOut: LiveData<Boolean>
         get() = _onSignOut
@@ -52,11 +42,6 @@ class ProfileViewModel @Inject constructor(
                 _onLoadImage.postValue(state as ResultState<String>)
             }
         }
-    }
-
-    fun getCurrentUserData() = viewModelScope.launch {
-        val user = databaseRepository.getCurrentUserData()
-        _userData.postValue(user)
     }
 
     fun addImageToUser(url:String) = viewModelScope.launch{
