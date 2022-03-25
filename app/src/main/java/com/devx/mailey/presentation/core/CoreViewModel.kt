@@ -21,7 +21,7 @@ class CoreViewModel @Inject constructor(private val databaseRepository: Database
 
     private var string: String? = null
 
-    private var stringPair: Pair<String ,String>? = null
+    private var chatPair: Pair<String ,User>? = null
 
 
     private val _user = MutableLiveData<User>()
@@ -55,11 +55,11 @@ class CoreViewModel @Inject constructor(private val databaseRepository: Database
     fun getString(): String?{
         return string
     }
-    fun putStringPair(pair: Pair<String, String>){
-        stringPair = pair
+    fun putChatPair(pair: Pair<String, User>){
+        chatPair = pair
     }
-    fun getStringPair(): Pair<String, String>?{
-        return stringPair
+    fun getChatPair(): Pair<String, User>?{
+        return chatPair
     }
 
 }

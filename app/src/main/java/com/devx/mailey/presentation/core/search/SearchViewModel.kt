@@ -26,8 +26,8 @@ class SearchViewModel @Inject constructor(
     get() = _searchedUsers
 
 
-    private val _onRoomCreated = MutableLiveData<Event<Pair<String, String>>>()
-    val onRoomCreated: LiveData<Event<Pair<String, String>>>
+    private val _onRoomCreated = MutableLiveData<Event<Pair<String, User>>>()
+    val onRoomCreated: LiveData<Event<Pair<String, User>>>
         get() = _onRoomCreated
 
 
@@ -45,13 +45,13 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun createRoomId(leftUserId: String, rightUserId: String){
-        val leftId = leftUserId.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
+    fun createRoomId(leftUser: User, rightUserId: String){
+        val leftId = leftUser.id.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
         val rightId = rightUserId.map { if(!it.isLetter()) it else ""}.joinToString("").toLong()
         if(leftId < rightId){
-            _onRoomCreated.postValue(Event(Pair(leftUserId.take(14) + rightUserId.take(14), leftUserId)))
+            _onRoomCreated.postValue(Event(Pair(leftUser.id.take(14) + rightUserId.take(14), leftUser)))
         }else{
-            _onRoomCreated.postValue(Event(Pair(rightUserId.take(14) + leftUserId.take(14), leftUserId)))
+            _onRoomCreated.postValue(Event(Pair(rightUserId.take(14) + leftUser.id.take(14), leftUser)))
         }
 
 }}

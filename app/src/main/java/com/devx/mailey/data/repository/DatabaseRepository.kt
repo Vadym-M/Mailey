@@ -34,5 +34,5 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
  suspend fun isRoomExist(room: String) = databaseService.isRoomExist(room)
  suspend fun getRoomById(roomId: String) = databaseService.getRoomById(roomId)
  suspend fun pushMessage(roomId: String, msg: Message) = databaseService.pushMessage(roomId, msg)
- fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>) = databaseService.addMessageListener(liveData)
+ fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String) = databaseService.addMessageListener(liveData, roomId)
 }

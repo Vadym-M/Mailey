@@ -20,7 +20,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
@@ -154,15 +153,20 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
 
     override suspend fun pushMessage(roomId: String, msg: Message) {
         val key = database.child("rooms").child(roomId).child("messages").push().key
-        val value = mapOf("/rooms/$roomId/messages/$key" to msg)
+        val postValues = msg.toMap()
+        val value = mapOf("/rooms/$roomId/messages/$key" to postValues)
         database.updateChildren(value)
+
     }
 
-    override fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>) {
-       database.child("rooms").child("YLbPiWXbUuZXihZxPFOt6iPSUVC6").child("messages").addChildEventListener( object : ChildEventListener{
+    override fun addMessageListener(
+        liveData: MutableLiveData<MutableMap<String, Message>>,
+        roomId: String
+    ) {
+       database.child("rooms").child(roomId).child("messages").addChildEventListener( object : ChildEventListener{
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                val msg = snapshot.getValue<Message>()!!
-                val key = snapshot.key.toString()!!
+                val key = snapshot.key.toString()
                 val test = mutableMapOf<String, Message>(key to msg)
                 liveData.postValue(test)
 

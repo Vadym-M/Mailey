@@ -1,7 +1,6 @@
 package com.devx.mailey.data.model
 
 import android.os.Parcelable
-import com.google.firebase.database.Exclude
 import com.google.firebase.database.IgnoreExtraProperties
 import kotlinx.parcelize.Parcelize
 

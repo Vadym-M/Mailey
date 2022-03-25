@@ -81,7 +81,7 @@ class SearchFragment : Fragment() {
     private fun onRoomObserver() {
         viewModel.onRoomCreated.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
-                coreViewModel.putStringPair(event.peekContent())
+                coreViewModel.putChatPair(event.peekContent())
                 coreViewModel.setFragment(ChatFragment())
             }
         }
@@ -89,13 +89,12 @@ class SearchFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        coreViewModel.setFragment(null)
     }
 
     private fun adapterClickListener() {
         usersAdapter.onItemClick = { user ->
             val currentUser = coreViewModel.getCurrentUser()
-            viewModel.createRoomId(user.id, currentUser.id)
+            viewModel.createRoomId(user, currentUser.id)
         }
 
     }

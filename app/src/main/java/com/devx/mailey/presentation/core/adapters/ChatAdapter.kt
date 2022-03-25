@@ -15,6 +15,10 @@ import com.devx.mailey.R
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.presentation.core.chat.ChatItems
 import com.devx.mailey.util.Constants
+import com.devx.mailey.util.toDate
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
     inner class ViewHolder(val view: View): RecyclerView.ViewHolder(view)  {
@@ -32,9 +36,9 @@ class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
           val time = view.findViewById<TextView>(R.id.left_message_time)
           val image = view.findViewById<ImageView>(R.id.left_message_user_image)
             text.text = data?.text
-            time.text = data?.timestamp
+            time.text = data?.timestamp?.toDate()
             Glide.with(image.rootView)
-                .load(data?.imageUrl ?: Constants.IMAGE_BLANK_URL)
+                .load(data!!.imageUrl ?: Constants.IMAGE_BLANK_URL)
                 .circleCrop()
                 .into(image)
 
@@ -44,9 +48,9 @@ class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
             val time = view.findViewById<TextView>(R.id.right_message_time)
             val image = view.findViewById<ImageView>(R.id.right_message_user_image)
             text.text = data?.text
-            time.text = data?.timestamp
+            time.text = data?.timestamp?.toDate()
             Glide.with(image.rootView)
-                .load(data?.imageUrl ?: Constants.IMAGE_BLANK_URL)
+                .load(data!!.imageUrl ?: Constants.IMAGE_BLANK_URL)
                 .circleCrop()
                 .into(image)
 
@@ -71,6 +75,7 @@ class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
         get() = differ.currentList
         set(value) {
             differ.submitList(value)
+            notifyDataSetChanged()
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

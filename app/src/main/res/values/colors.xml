@@ -9,6 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green_white">#CFF09E</color>
     <color name="green_dark">#507C5C</color>
+    <color name="left_message">#9BA384</color>
+    <color name="right_message">#7d9b5d</color>
     <color name="red">#BF0444</color>
     <color name="clever">#cad2c5</color>
 </resources>

@@ -26,6 +26,8 @@ class CoreActivity : AppCompatActivity() {
                     .replace(R.id.coreFragmentContainer, fragment)
                     .addToBackStack(null)
                     .commit()
+            }else{
+                onBackPressed()
             }
         }
         binding = ActivityCoreBinding.inflate(layoutInflater)

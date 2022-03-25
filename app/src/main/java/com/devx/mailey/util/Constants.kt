@@ -1,5 +1,9 @@
 package com.devx.mailey.util
 
+import android.annotation.SuppressLint
+import java.text.SimpleDateFormat
+import java.util.*
+
 class Constants {
     companion object{
         const val IMAGE_BLANK_URL = "https://firebasestorage.googleapis.com/v0/b/smart-messenger-d3069.appspot.com/o/default%2Fcat.jpg?alt=media&token=0dc5eded-d682-4cd5-8b7e-a2f082f7e099"
@@ -9,4 +13,10 @@ class Constants {
 }
 fun <T> reverseList(list: List<T>): MutableList<T> {
     return list.indices.map { i: Int -> list[list.size - 1 - i] } as MutableList<T>
+}
+@SuppressLint("SimpleDateFormat")
+fun Long.toDate():String{
+    val date = Date(this)
+    val format = SimpleDateFormat("HH:mm")
+    return format.format(date)
 }

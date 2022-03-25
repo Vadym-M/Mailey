@@ -1,6 +1,5 @@
 package com.devx.mailey.presentation.core.chat
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,20 +9,12 @@ import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.util.Constants
-import com.devx.mailey.util.ResultState
-import com.devx.mailey.util.reverseList
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.sql.Timestamp
-import java.text.SimpleDateFormat
-import java.time.Clock
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.HashMap
+
 @HiltViewModel
 class ChatViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) :
     ViewModel() {
@@ -33,108 +24,83 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
         get() = _onMessageAdded
 
     private val _onMessageListener = MutableLiveData<MutableMap<String, Message>>()
-    val onMessageListener: LiveData<MutableMap<String, Message>>
+    private val onMessageListener: LiveData<MutableMap<String, Message>>
         get() = _onMessageListener
 
-    private val _currentRoom = MutableLiveData<Room>()
-    val currentRoom: LiveData<Room>
-        get() = _currentRoom
+
+    private var currentMessages = mutableListOf<ChatItems<Message>>()
 
     var user: User? = null
-    var room: Room? = null
-
-    fun initRoom(roomId: String, userId:String) {
-        getRoom(roomId, userId)
+    private var room: Room? = null
+    fun initCurrentUser(user: User) {
+        this.user = user
     }
-    private fun getRoom(roomId: String, userId:String) = viewModelScope.launch{
-        user = databaseRepository.getCurrentUserData()
-        val result = databaseRepository.isRoomExist(roomId)
-        if(result){
+
+    fun initRoom(roomId: String, userId: String) {
+        getRoom(roomId, userId)
+
+    }
+
+    private fun getRoom(roomId: String, userId: String) = viewModelScope.launch {
+        try {
             room = databaseRepository.getRoomById(roomId)
             showMessages()
-        }else{
+        } catch (e: Exception) {
             room = Room(HashMap(), roomId, userId, user!!.id)
             showMessages()
-                async { databaseRepository.createRoom(room!!)}
-                async { databaseRepository.pushRoomIdToUser(roomId, user!!.id) }
+            databaseRepository.createRoom(room!!)
+            databaseRepository.pushRoomIdToUser(roomId, user!!.id)
         }
-        messageListener()
-    }
-    private fun showMessages(){
-        val list = mutableListOf<ChatItems<Message>>()
-        room!!.messages.keys.sortedByDescending { it }
-        room!!.messages.values.forEach{ item->
-
-                if (item.userId == user!!.id) {
-                    list.add(ChatItems.UserRight(item))
-                } else {
-                    list.add(ChatItems.UserLeft(item))
-                }
-
-        }
-//        list.sortByDescending {
-//            val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC)
-//            LocalDateTime.parse(it.data?.timestamp.toString(), pattern)}
-        _onMessageAdded.postValue(list)
+        messageListener(roomId)
     }
 
-    fun sendMessage(str: String){
-        var uniqueID = UUID.randomUUID().toString()
-
-        val current = LocalDateTime.now()
-
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC)
-        val formatted = current.format(formatter)
-        val msg = Message(uniqueID, str, user!!.id, formatted, Constants.IMAGE_BLANK_URL, user!!.fullName)
-        pushMessage(room!!.roomId, msg)
-        room!!.messages.put(msg.id, msg)
-        val list = mutableListOf<ChatItems<Message>>()
-        room!!.messages.values.forEach{ item->
-
-                if (item.userId == user!!.id) {
-                    list.add(ChatItems.UserRight(item))
-                } else {
-                    list.add(ChatItems.UserLeft(item))
-                }
-
-        }
-        list.sortByDescending {
-            val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC)
-            LocalDateTime.parse(it.data?.timestamp.toString(), pattern)
-
-        }
-        _onMessageAdded.postValue(list)
-    }
-    private fun messageListener(){
-        databaseRepository.addMessageListener(_onMessageListener)
-        onMessageListener.observeForever { it ->
-            it.forEach {
-                if(it.value.userId != user?.id){
-                    room!!.messages.put(it.key, it.value)
-                }
-
-            }
+    private fun showMessages() {
+        if (currentMessages.isNullOrEmpty()) {
+            val listMsg = room!!.messages.values.toMutableList()
             val list = mutableListOf<ChatItems<Message>>()
-            room!!.messages.values.forEach{ item->
+            listMsg.forEach { item ->
+                if (item.userId == user!!.id) {
+                    list.add(ChatItems.UserRight(item))
+                } else {
+                    list.add(ChatItems.UserLeft(item))
+                }
+            }
+            currentMessages = list
+        }
+        currentMessages.sortWith(compareBy { it.data?.timestamp })
+        currentMessages.reverse()
+        _onMessageAdded.postValue(currentMessages)
+    }
 
-                    if (item.userId == user!!.id) {
-                        list.add(ChatItems.UserRight(item))
-                    } else {
-                        list.add(ChatItems.UserLeft(item))
+    fun sendMessage(str: String) {
+        val uniqueID = UUID.randomUUID().toString()
+        val imageUrl =
+            if (user!!.imagesUrl.isNotEmpty()) user!!.imagesUrl.first() else Constants.IMAGE_BLANK_URL
+        val msg = Message(uniqueID, str, user!!.id, Date().time, imageUrl, user!!.fullName)
+        currentMessages.add(0, ChatItems.UserRight(msg))
+        _onMessageAdded.postValue(currentMessages)
+        pushMessage(room!!.roomId, msg)
+    }
+
+    private fun messageListener(roomId: String) {
+        databaseRepository.addMessageListener(_onMessageListener, roomId)
+        onMessageListener.observeForever { it ->
+            if (currentMessages.isNullOrEmpty()) {
+                currentMessages.add(0, ChatItems.UserLeft(it.values.first()))
+            }
+            it.forEach {
+                if (it.value.userId != user?.id) {
+                    if (currentMessages.first().data?.timestamp != it.value.timestamp) {
+                        currentMessages.add(0, ChatItems.UserLeft(it.value))
                     }
-
+                }
             }
-            list.sortByDescending {
-                val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC)
-                LocalDateTime.parse(it.data?.timestamp.toString(), pattern)
-
-            }
-            _onMessageAdded.postValue(list)
+            _onMessageAdded.postValue(currentMessages)
         }
     }
 
 
-    private fun pushMessage(roomId:String, msg:Message) = viewModelScope.launch{
+    private fun pushMessage(roomId: String, msg: Message) = viewModelScope.launch {
         databaseRepository.pushMessage(roomId, msg)
     }
 
