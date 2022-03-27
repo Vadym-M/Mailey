@@ -20,4 +20,5 @@ interface DatabaseService {
     suspend fun isRoomExist(roomId: String):Boolean
     suspend fun pushMessage(roomId: String, msg: Message)
     fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String)
+    fun changeUserField(fieldName: String, value: String)
 }

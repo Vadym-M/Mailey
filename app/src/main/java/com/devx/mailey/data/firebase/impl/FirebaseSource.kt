@@ -193,6 +193,9 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         currentUserRef = database.child("users").child(id)
     }
 
+    override fun changeUserField(fieldName: String, value: String) {
+        CurrentUser.changeFieldValue(fieldName, value)
+    }
 
 }
 
@@ -200,6 +203,36 @@ class CurrentUser {
     companion object {
         val init = FirebaseSource.currentUserRef
         val imagesUrl = init.child("imagesUrl")
+
+        fun changeFieldValue(fieldName: String, value: String) {
+            when (fieldName) {
+
+                "fullName" -> {
+                    setName(value)
+                }
+
+                "About" -> {
+                    setAbout(value)
+                }
+
+                "Phone" -> {
+                    setPhone(value)
+                }
+
+            }
+        }
+
+        private fun setName(value: String) {
+            init.child("fullName").setValue(value)
+        }
+
+        private fun setAbout(value: String) {
+            init.child("about").setValue(value)
+        }
+
+        private fun setPhone(value: String) {
+            init.child("phone").setValue(value)
+        }
     }
 }
 

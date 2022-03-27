@@ -12,10 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
+import com.devx.mailey.R
 import com.devx.mailey.databinding.FragmentProfileBinding
 import com.devx.mailey.presentation.auth.AuthActivity
 import com.devx.mailey.presentation.core.CoreActivity
 import com.devx.mailey.presentation.core.CoreViewModel
+import com.devx.mailey.presentation.core.profile.field.FieldFragment
 import com.devx.mailey.util.Constants
 import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
@@ -126,13 +128,25 @@ class ProfileFragment : Fragment() {
     private fun accountBlockListener() {
         binding.apply {
             profileFullName.editText?.setOnClickListener {
-                // go to edit fragment throw viewModel
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.coreFragmentContainer, FieldFragment("fullName"))
+                    .addToBackStack(null)
+                    .commit()
             }
+
             profileAbout.editText?.setOnClickListener {
                 // go to edit fragment throw viewModel
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.coreFragmentContainer, FieldFragment("about"))
+                    .addToBackStack(null)
+                    .commit()
             }
             profilePhoneNumber.editText?.setOnClickListener {
                 // go to edit fragment throw viewModel
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.coreFragmentContainer, FieldFragment("phone"))
+                    .addToBackStack(null)
+                    .commit()
             }
         }
     }
@@ -148,4 +162,9 @@ class ProfileFragment : Fragment() {
         }
     }
 
+//    private fun saveBtnObserver() {
+//        viewModel.saveBtnVisible.observe(viewLifecycleOwner) {
+//            binding.profileSaveChanges.visibility = it
+//        }
+//    }
 }
