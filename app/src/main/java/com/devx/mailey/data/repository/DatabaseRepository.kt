@@ -1,5 +1,6 @@
 package com.devx.mailey.data.repository
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.model.Message
@@ -13,6 +14,7 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
 
  private val userMutex = Mutex()
  private var currentUser: User? = null
+ private val roomList:MutableList<Room> = mutableListOf()
  suspend fun getCurrentUserData(): User {
   if (currentUser == null) {
    val user = databaseService.getCurrentUserData()
@@ -32,7 +34,34 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
  suspend fun createRoom(room: Room) = databaseService.createRoom(room)
  suspend fun pushRoomIdToUser(roomId:String, userId:String) = databaseService.pushRoomIdToUser(roomId, userId)
  suspend fun isRoomExist(room: String) = databaseService.isRoomExist(room)
- suspend fun getRoomById(roomId: String) = databaseService.getRoomById(roomId)
+ suspend fun getRoomById(roomId: String): Room {
+  val room = databaseService.getRoomById(roomId)
+   if (roomList.isNotEmpty()) {
+    roomList.forEachIndexed { index, item ->
+     if (item.roomId == room.roomId) {
+      roomList[index] = room
+     }
+    }
+    if(!roomList.contains(room)){
+     roomList.add(room)
+    }
+   } else {
+    roomList.add(room)
+   }
+
+  return room
+ }
  suspend fun pushMessage(roomId: String, msg: Message) = databaseService.pushMessage(roomId, msg)
  fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String) = databaseService.addMessageListener(liveData, roomId)
+ suspend fun onRoomsChanged(liveData: MutableLiveData<String>,userId: String) = databaseService.onRoomsChanged(liveData, userId)
+ suspend fun pushRoomChanged(userId: String, roomId: String) = databaseService.pushRoomChanged(userId, roomId)
+ fun getRooms():MutableList<Room>{
+
+  roomList.sortWith(compareBy {
+   val test = it.messages.values.toMutableList()
+   test.sortWith(compareBy {i-> i.timestamp })
+   test.last().timestamp})
+  roomList.reverse()
+  return roomList
+ }
 }

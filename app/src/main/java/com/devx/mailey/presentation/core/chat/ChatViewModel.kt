@@ -27,30 +27,57 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
     private val onMessageListener: LiveData<MutableMap<String, Message>>
         get() = _onMessageListener
 
+    private val _initUser = MutableLiveData<Pair<String, String>>()
+    val initUser: LiveData<Pair<String, String>>
+        get() = _initUser
+
+
 
     private var currentMessages = mutableListOf<ChatItems<Message>>()
 
-    var user: User? = null
+    var currentUser: User? = null
+    var chatWithUserId: String? = null
     private var room: Room? = null
     fun initCurrentUser(user: User) {
-        this.user = user
+        this.currentUser = user
     }
 
-    fun initRoom(roomId: String, userId: String) {
-        getRoom(roomId, userId)
-
-    }
-
-    private fun getRoom(roomId: String, userId: String) = viewModelScope.launch {
-        try {
-            room = databaseRepository.getRoomById(roomId)
+    fun initRoom(room: Room?, roomId: String?, user: User?) {
+        if(room != null){
+            this.room = room
+            if(currentUser!!.id != room.firstUserId){
+                _initUser.value = Pair(room.firstUserName, room.firstUserUrl)
+                chatWithUserId = room.secondUserId
+            }else{
+                _initUser.value = Pair(room.secondUserName, room.secondUserUrl)
+                chatWithUserId = room.firstUserId
+            }
             showMessages()
-        } catch (e: Exception) {
-            room = Room(HashMap(), roomId, userId, user!!.id)
-            showMessages()
-            databaseRepository.createRoom(room!!)
-            databaseRepository.pushRoomIdToUser(roomId, user!!.id)
+            messageListener(room.roomId)
+        }else {
+            getRoom(roomId!!, user!!)
+            val imageUrl = if(user.imagesUrl.isNotEmpty()) user.imagesUrl.last() else Constants.IMAGE_BLANK_URL
+            _initUser.value = Pair(user.fullName, imageUrl)
+            chatWithUserId = user.id
         }
+    }
+
+    private fun getRoom(roomId: String, user: User) = viewModelScope.launch {
+
+            room = databaseRepository.getRoomById(roomId)
+            if(room != null){
+                showMessages()
+            }else{
+                val imageUrlFirst =
+                    if (user.imagesUrl.isNotEmpty()) user.imagesUrl.last() else Constants.IMAGE_BLANK_URL
+                val imageUrlSecond = if (currentUser!!.imagesUrl.isNotEmpty()) currentUser!!.imagesUrl.last() else Constants.IMAGE_BLANK_URL
+                room = Room(HashMap(), roomId, user.id, user.fullName, imageUrlFirst, currentUser!!.id, currentUser!!.fullName, imageUrlSecond)
+                showMessages()
+                databaseRepository.createRoom(room!!)
+                databaseRepository.pushRoomIdToUser(roomId, currentUser!!.id)
+            }
+
+
         messageListener(roomId)
     }
 
@@ -59,7 +86,7 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
             val listMsg = room!!.messages.values.toMutableList()
             val list = mutableListOf<ChatItems<Message>>()
             listMsg.forEach { item ->
-                if (item.userId == user!!.id) {
+                if (item.userId == currentUser!!.id) {
                     list.add(ChatItems.UserRight(item))
                 } else {
                     list.add(ChatItems.UserLeft(item))
@@ -75,8 +102,8 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
     fun sendMessage(str: String) {
         val uniqueID = UUID.randomUUID().toString()
         val imageUrl =
-            if (user!!.imagesUrl.isNotEmpty()) user!!.imagesUrl.first() else Constants.IMAGE_BLANK_URL
-        val msg = Message(uniqueID, str, user!!.id, Date().time, imageUrl, user!!.fullName)
+            if (currentUser!!.imagesUrl.isNotEmpty()) currentUser!!.imagesUrl.last() else Constants.IMAGE_BLANK_URL
+        val msg = Message(uniqueID, str, currentUser!!.id, Date().time, imageUrl, currentUser!!.fullName)
         currentMessages.add(0, ChatItems.UserRight(msg))
         _onMessageAdded.postValue(currentMessages)
         pushMessage(room!!.roomId, msg)
@@ -89,7 +116,7 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
                 currentMessages.add(0, ChatItems.UserLeft(it.values.first()))
             }
             it.forEach {
-                if (it.value.userId != user?.id) {
+                if (it.value.userId != currentUser?.id) {
                     if (currentMessages.first().data?.timestamp != it.value.timestamp) {
                         currentMessages.add(0, ChatItems.UserLeft(it.value))
                     }
@@ -102,6 +129,8 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
 
     private fun pushMessage(roomId: String, msg: Message) = viewModelScope.launch {
         databaseRepository.pushMessage(roomId, msg)
+        databaseRepository.pushRoomIdToUser(roomId, chatWithUserId!!)
+        databaseRepository.pushRoomIdToUser(roomId, currentUser!!.id)
     }
 
 }

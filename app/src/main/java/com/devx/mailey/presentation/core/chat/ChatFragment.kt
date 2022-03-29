@@ -26,20 +26,26 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentChatBinding.inflate(inflater, container, false)
-        initUser()
         onBackPressed()
         return binding.root
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val data = coreViewModel.getChatPair()!!
         viewModel.initCurrentUser(coreViewModel.getCurrentUser())
-        viewModel.initRoom(data.first, data.second.id)
+        val room = coreViewModel.getRoom()
+        if(room != null){
+            viewModel.initRoom(room, null, null)
+        }else{
+            val data = coreViewModel.getChatPair()!!
+            viewModel.initRoom(null, data.first, data.second)
+        }
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initUserObserver()
         binding.sendBtn.setOnClickListener {
 
             viewModel.sendMessage(binding.chatEditText.text.toString())
@@ -62,13 +68,16 @@ class ChatFragment : Fragment() {
             binding.chatRecycler.smoothScrollToPosition(0)
         }
     }
-    private fun initUser(){
-        val user = coreViewModel.getChatPair()?.second
-        binding.chatUserName.text = user?.fullName
-
-        if(user!!.imagesUrl.isNotEmpty()) {
+    private fun initUserObserver(){
+        viewModel.initUser.observe(viewLifecycleOwner){
+            initUser(it.first, it.second)
+        }
+    }
+    private fun initUser(fullName:String, imageUrl: String?){
+        binding.chatUserName.text = fullName
+        if (imageUrl != null){
             Glide.with(this)
-                .load(user.imagesUrl.first())
+                .load(imageUrl)
                 .circleCrop()
                 .into(binding.chatUserImage)
         }else{
@@ -77,10 +86,11 @@ class ChatFragment : Fragment() {
                 .circleCrop()
                 .into(binding.chatUserImage)
         }
+
     }
     private fun onBackPressed(){
         binding.chatBackBtn.setOnClickListener {
-            coreViewModel.setFragment(null)
+         coreViewModel.backPressed()
         }
     }
 
