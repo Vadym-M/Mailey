@@ -8,7 +8,6 @@ import com.devx.mailey.util.ResultState
 import kotlinx.coroutines.flow.Flow
 
 interface DatabaseService {
-    suspend fun getRooms()
     fun writeMessage(user: User, message: Message, room: Room)
     suspend fun getCurrentUserData(): User?
     suspend fun updateImagesUrl(urls: List<String>)
@@ -20,4 +19,6 @@ interface DatabaseService {
     suspend fun isRoomExist(roomId: String):Boolean
     suspend fun pushMessage(roomId: String, msg: Message)
     fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String)
+    suspend fun onRoomsChanged(liveData: MutableLiveData<String>, userId: String)
+    suspend fun pushRoomChanged(userId: String, roomId: String)
 }

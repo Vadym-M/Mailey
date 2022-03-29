@@ -4,6 +4,7 @@ import com.devx.mailey.data.firebase.AuthService
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.firebase.impl.FirebaseSource
 import com.devx.mailey.data.firebase.StorageService
+import com.devx.mailey.data.repository.DatabaseRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,11 +38,11 @@ object AppModule {
 //    fun provideAuthRepository(authService: AuthService): AuthRepository{
 //        return AuthRepository(authService)
 //    }
-//    @Provides
-//    @Singleton
-//    fun provideDatabaseRepository(databaseService: DatabaseService): DatabaseRepository{
-//        return DatabaseRepository(databaseService)
-//    }
+    @Provides
+    @Singleton
+    fun provideDatabaseRepository(databaseService: DatabaseService): DatabaseRepository {
+        return DatabaseRepository(databaseService)
+    }
 
 
 }

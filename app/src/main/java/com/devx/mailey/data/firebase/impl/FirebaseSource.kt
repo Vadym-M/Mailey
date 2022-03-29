@@ -100,8 +100,6 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         ref.delete().await()
     }
 
-
-    override suspend fun getRooms() {}
     override fun writeMessage(user: User, message: Message, room: Room) {}
     override fun writeMessage(nameUser: String, message: Message, room: Room): Boolean {
         TODO("Not yet implemented")
@@ -117,6 +115,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
 
     override suspend fun getRoomById(roomId: String): Room {
         return database.child("rooms").child(roomId).get().await().getValue(Room::class.java)!!
+
     }
 
     override suspend fun createRoom(room: Room): Boolean {
@@ -143,8 +142,8 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
 
     override suspend fun pushRoomIdToUser(roomId: String, userId: String) {
         val key = database.child("users").child(userId).child("rooms").push().key
-        val values = mapOf("/users/$userId/rooms/$key" to roomId)
-        database.updateChildren(values)
+        val values = mapOf("/users/$userId/rooms/$roomId" to key)
+        database.updateChildren(values).await()
     }
 
     override suspend fun isRoomExist(roomId: String): Boolean {
@@ -163,29 +162,64 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         liveData: MutableLiveData<MutableMap<String, Message>>,
         roomId: String
     ) {
-       database.child("rooms").child(roomId).child("messages").addChildEventListener( object : ChildEventListener{
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-               val msg = snapshot.getValue<Message>()!!
-                val key = snapshot.key.toString()
-                val test = mutableMapOf<String, Message>(key to msg)
-                liveData.postValue(test)
+        database.child("rooms").child(roomId).child("messages")
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val msg = snapshot.getValue<Message>()!!
+                    val key = snapshot.key.toString()
+                    val test = mutableMapOf<String, Message>(key to msg)
+                    liveData.postValue(test)
 
-            }
+                }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
 
-            }
+                }
 
-            override fun onChildRemoved(snapshot: DataSnapshot) {
+                override fun onChildRemoved(snapshot: DataSnapshot) {
 
-            }
+                }
 
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-            }
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+    }
+
+    override suspend fun onRoomsChanged(
+        liveData: MutableLiveData<String>, userId: String
+    ){
+        database.child("users").child(userId).child("rooms")
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val key = snapshot.key
+                    liveData.postValue(key)
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                    //val r = snapshot.getValue<String>()!!
+                    val key = snapshot.key
+                    liveData.postValue(key)
+                }
+
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+
+                }
+
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+    }
+
+    override suspend fun pushRoomChanged(userId: String, roomId: String) {
+        val key = database.child("users").child(userId).child("updatedRooms").push().key
+        val value = mapOf("/users/$userId/updatedRooms/$roomId" to key)
+        database.updateChildren(value)
     }
 
 
