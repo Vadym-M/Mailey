@@ -10,7 +10,6 @@ import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.RoomItem
 import com.devx.mailey.util.Event
-import com.devx.mailey.util.Navigator
 import com.devx.mailey.util.getLastMessage
 import com.devx.mailey.util.getLastMessageTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel

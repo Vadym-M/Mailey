@@ -9,11 +9,10 @@ import com.devx.mailey.databinding.ActivityCoreBinding
 import com.devx.mailey.presentation.core.home.HomeFragment
 import com.devx.mailey.presentation.core.profile.ProfileFragment
 import com.devx.mailey.presentation.core.search.SearchFragment
-import com.devx.mailey.util.Navigator
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CoreActivity : AppCompatActivity() , Navigator{
+class CoreActivity : AppCompatActivity(){
     private val coreViewModel: CoreViewModel by viewModels()
     lateinit var binding: ActivityCoreBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,10 +65,4 @@ class CoreActivity : AppCompatActivity() , Navigator{
             .commit()
     }
 
-    override fun launch(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.coreFragmentContainer, fragment)
-            .addToBackStack(null)
-            .commit()
-    }
 }
