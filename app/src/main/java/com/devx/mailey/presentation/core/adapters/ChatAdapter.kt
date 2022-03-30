@@ -1,7 +1,6 @@
 package com.devx.mailey.presentation.core.adapters
 
 import android.content.Context
-import android.provider.SyncStateContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,12 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.devx.mailey.R
 import com.devx.mailey.data.model.Message
-import com.devx.mailey.presentation.core.chat.ChatItems
+import com.devx.mailey.domain.data.ChatItems
 import com.devx.mailey.util.Constants
 import com.devx.mailey.util.toDate
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
     inner class ViewHolder(val view: View): RecyclerView.ViewHolder(view)  {

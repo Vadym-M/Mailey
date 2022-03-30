@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core.chat
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,13 +9,12 @@ import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
+import com.devx.mailey.domain.data.ChatItems
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.util.getUserImage
 import com.devx.mailey.util.sortByTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -34,7 +34,6 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
     val initUser: LiveData<Pair<String, String>>
         get() = _initUser
 
-
     private var currentMessages = mutableListOf<ChatItems<Message>>()
 
     private var currentUser: User? = null
@@ -52,25 +51,21 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
             this.room = roomFromCache
         } else {
             viewModelScope.launch {
-                withContext(Dispatchers.Default) {
-                    try {
-                        room = databaseRepository.getRoomById(localRoom.roomId)
-                    } catch (e: Exception) {
-                        room = Room(
-                            HashMap(),
-                            localRoom.roomId,
-                            localRoom.chatWithId,
-                            localRoom.chatWithName,
-                            localRoom.chatWithImageUrl,
-                            currentUser!!.id,
-                            currentUser!!.fullName,
-                            currentUser!!.imagesUrl.getUserImage()
-                        )
-                        viewModelScope.launch {
-                            databaseRepository.createRoom(room!!)
-                            messageListener(localRoom.roomId)
-                        }
-                    }
+                try {
+                    room = databaseRepository.getRoomById(localRoom.roomId)
+                } catch (e: Exception) {
+                    room = Room(
+                        HashMap(),
+                        localRoom.roomId,
+                        localRoom.chatWithId,
+                        localRoom.chatWithName,
+                        localRoom.chatWithImageUrl,
+                        currentUser!!.id,
+                        currentUser!!.fullName,
+                        currentUser!!.imagesUrl.getUserImage()
+                    )
+                    databaseRepository.createRoom(room!!)
+                    messageListener(localRoom.roomId)
                 }
             }
         }

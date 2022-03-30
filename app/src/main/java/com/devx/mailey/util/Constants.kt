@@ -2,8 +2,7 @@ package com.devx.mailey.util
 
 import android.annotation.SuppressLint
 import com.devx.mailey.data.model.Message
-import com.devx.mailey.data.model.Room
-import com.devx.mailey.presentation.core.chat.ChatItems
+import com.devx.mailey.domain.data.ChatItems
 import java.text.SimpleDateFormat
 import java.util.*
 
