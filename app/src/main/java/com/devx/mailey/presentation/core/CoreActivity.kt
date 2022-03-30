@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.devx.mailey.R
 import com.devx.mailey.databinding.ActivityCoreBinding
 import com.devx.mailey.presentation.core.home.HomeFragment
@@ -42,14 +43,17 @@ class CoreActivity : AppCompatActivity(){
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId){
                 R.id.home -> {
+                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     showFragment(HomeFragment())
                     true
                 }
                 R.id.search -> {
+                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     showFragment(SearchFragment())
                     true
                 }
                 R.id.profile -> {
+                    supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     showFragment(ProfileFragment())
                     true
                 }
