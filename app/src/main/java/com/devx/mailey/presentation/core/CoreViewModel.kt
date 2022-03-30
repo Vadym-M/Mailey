@@ -5,9 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
+import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.domain.data.RoomItem
 import com.devx.mailey.util.Event
 import com.devx.mailey.util.getLastMessage
@@ -19,16 +19,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CoreViewModel @Inject constructor(
-    private val databaseRepository: DatabaseRepository) :
-    ViewModel(){
+    private val databaseRepository: DatabaseRepository
+) :
+    ViewModel() {
     private var currentUser: User? = null
     private var userJob: Job? = null
-
-    private var string: String? = null
-
-    private var chatPair: Pair<String ,User>? = null
-
-    private var roomId: String? = null
+    private var localRoomData: LocalRoom? = null
 
 
     private val _user = MutableLiveData<User>()
@@ -44,7 +40,7 @@ class CoreViewModel @Inject constructor(
         get() = _backPressed
 
     private val _onRoomChanged = MutableLiveData<String>()
-    val onRoomChanged: LiveData<String>
+    private val onRoomChanged: LiveData<String>
         get() = _onRoomChanged
 
     private val _roomsChanged = MutableLiveData<MutableList<RoomItem>>()
@@ -52,9 +48,10 @@ class CoreViewModel @Inject constructor(
         get() = _roomsChanged
 
 
-    fun getCurrentUser():User{
+    fun getCurrentUser(): User {
         return user.value!!
     }
+
     fun fetchCurrentUser() {
         userJob?.cancel()
         userJob = viewModelScope.launch {
@@ -65,54 +62,59 @@ class CoreViewModel @Inject constructor(
         }
     }
 
-    fun setFragment(fragment: Fragment?){
-     _fragment.value = Event(fragment)
+    fun setFragment(fragment: Fragment?) {
+        _fragment.value = Event(fragment)
     }
-    fun backPressed(){
+
+    fun backPressed() {
         _backPressed.value = Event("")
     }
 
-    fun putString(str:String){
-        string = str
+    fun putRoomData(localRoom: LocalRoom) {
+        this.localRoomData = localRoom
     }
-    fun getString(): String?{
-        return string
-    }
-    fun putChatPair(pair: Pair<String, User>){
-        chatPair = pair
-    }
-    fun getChatPair(): Pair<String, User>?{
-        return chatPair
-    }
-    fun putRoomId(roomId:String){
-        this.roomId = roomId
-    }
-    fun getRoom(): Room? {
-        val rooms = databaseRepository.getRooms()
-        return rooms.find { it.roomId == roomId }
+
+    fun getRoomData(): LocalRoom? {
+        val data = this.localRoomData
+        this.localRoomData = null
+        return data
     }
 
 
-    private fun onRoomsChanged(userId: String) = viewModelScope.launch{
-        val result = databaseRepository.onRoomsChanged(_onRoomChanged, userId)
-        onRoomChanged.observeForever{
+    private fun onRoomsChanged(userId: String) = viewModelScope.launch {
+        databaseRepository.onRoomsChanged(_onRoomChanged, userId)
+        onRoomChanged.observeForever {
             viewModelScope.launch {
                 databaseRepository.getRoomById(it)
                 val list = databaseRepository.getRooms()
                 val newList = mutableListOf<RoomItem>()
                 list.forEach {
-                    if(it.firstUserId == currentUser!!.id){
-                        newList.add(RoomItem(it.roomId, it.secondUserUrl, it.secondUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
-                    }else{
-                        newList.add(RoomItem(it.roomId, it.firstUserUrl, it.firstUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
+                    if (it.firstUserId == currentUser!!.id) {
+                        newList.add(
+                            RoomItem(
+                                userId = it.secondUserId,
+                                roomId = it.roomId,
+                                userUrl = it.secondUserUrl,
+                                userName = it.secondUserName,
+                                lastMessage = it.messages.getLastMessage(),
+                                lastMessageTimestamp = it.messages.getLastMessageTimestamp()
+                            )
+                        )
+                    } else {
+                        newList.add(
+                            RoomItem(
+                                userId = it.firstUserId,
+                                roomId = it.roomId,
+                                userUrl = it.firstUserUrl,
+                                userName = it.firstUserName,
+                                lastMessage = it.messages.getLastMessage(),
+                                lastMessageTimestamp = it.messages.getLastMessageTimestamp()
+                            )
+                        )
                     }
-
                 }
-                //newList.sortWith(compareBy { it.messages.values.first().timestamp })
                 _roomsChanged.postValue(newList)
             }
         }
-
     }
-
 }

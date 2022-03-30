@@ -2,6 +2,8 @@ package com.devx.mailey.util
 
 import android.annotation.SuppressLint
 import com.devx.mailey.data.model.Message
+import com.devx.mailey.data.model.Room
+import com.devx.mailey.presentation.core.chat.ChatItems
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,4 +33,13 @@ fun MutableMap<String, Message>.getLastMessageTimestamp():String{
     val list = this.values.toMutableList()
     list.sortWith(compareBy { it.timestamp })
     return if(list.isEmpty()) "00:00" else list.last().timestamp.toDate()
+}
+
+fun MutableList<String>.getUserImage():String{
+    return  if(this.isNotEmpty()) this.last() else Constants.IMAGE_BLANK_URL
+}
+
+fun MutableList<ChatItems<Message>>.sortByTimestamp(){
+    this.sortWith(compareBy { it.data?.timestamp })
+    this.reverse()
 }

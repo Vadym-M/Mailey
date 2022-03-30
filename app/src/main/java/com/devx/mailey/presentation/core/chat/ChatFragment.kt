@@ -33,15 +33,9 @@ class ChatFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.initCurrentUser(coreViewModel.getCurrentUser())
-        val room = coreViewModel.getRoom()
-        if(room != null){
-            viewModel.initRoom(room, null, null)
-        }else{
-            val data = coreViewModel.getChatPair()!!
-            viewModel.initRoom(null, data.first, data.second)
+        val room = coreViewModel.getRoomData()
+            viewModel.initRoom(room!!)
         }
-
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

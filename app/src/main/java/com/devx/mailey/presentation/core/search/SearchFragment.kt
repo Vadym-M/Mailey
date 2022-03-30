@@ -79,17 +79,14 @@ class SearchFragment : Fragment() {
     }
 
     private fun onRoomObserver() {
-        viewModel.onRoomCreated.observe(viewLifecycleOwner) { event ->
+        viewModel.onLocalRoomIdCreated.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
-                coreViewModel.putChatPair(event.peekContent())
+                coreViewModel.putRoomData(event.peekContent())
                 coreViewModel.setFragment(ChatFragment())
             }
         }
     }
 
-    override fun onDetach() {
-        super.onDetach()
-    }
 
     private fun adapterClickListener() {
         usersAdapter.onItemClick = { user ->
