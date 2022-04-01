@@ -8,10 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.devx.mailey.databinding.FragmentHomeBinding
 import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.presentation.core.adapters.RoomAdapter
 import com.devx.mailey.presentation.core.chat.ChatFragment
+import com.devx.mailey.util.getUserImage
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -32,9 +34,11 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        showCurrentUserImage()
         recyclerViewInit()
         onRoomChanged()
         adapterClickListener()
+        progressBarObserver()
         coreViewModel.user.observe(viewLifecycleOwner){
          viewModel.getUserRooms(it)
         }
@@ -66,6 +70,21 @@ class HomeFragment : Fragment() {
         roomsAdapter.onItemClick = {
           coreViewModel.putRoomData(it)
             coreViewModel.setFragment(ChatFragment())
+        }
+    }
+    private fun progressBarObserver(){
+        viewModel.progressBar.observe(viewLifecycleOwner){
+         binding.homeProgressBar.visibility = it
+        }
+    }
+
+    private fun showCurrentUserImage(){
+        coreViewModel.user.observe(viewLifecycleOwner){
+            val userImage = it.imagesUrl.getUserImage()
+            Glide.with(this)
+                .load(userImage)
+                .circleCrop()
+                .into(binding.homeUserImage)
         }
     }
 }

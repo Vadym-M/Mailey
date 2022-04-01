@@ -75,9 +75,7 @@ class CoreViewModel @Inject constructor(
     }
 
     fun getRoomData(): LocalRoom? {
-        val data = this.localRoomData
-        this.localRoomData = null
-        return data
+        return localRoomData
     }
 
 

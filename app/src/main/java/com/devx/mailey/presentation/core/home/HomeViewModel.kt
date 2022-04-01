@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core.home
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,40 +17,85 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val databaseRepository: DatabaseRepository): ViewModel() {
+class HomeViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) :
+    ViewModel() {
 
     private val _rooms = MutableLiveData<List<RoomItem>>()
     val rooms: LiveData<List<RoomItem>>
         get() = _rooms
 
-    fun getUserRooms(user: User) = viewModelScope.launch{
+    private val _progressBar = MutableLiveData<Int>()
+    val progressBar: LiveData<Int>
+        get() = _progressBar
+
+    fun getUserRooms(user: User) = viewModelScope.launch {
         val result = databaseRepository.getRooms()
-        if (result.isNotEmpty()){
+        if (result.isNotEmpty()) {
             val newList = mutableListOf<RoomItem>()
             result.forEach {
-                if(it.firstUserId != user.id){
-                    newList.add(RoomItem(it.firstUserId, it.roomId, it.firstUserUrl, it.firstUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
-                }else{
-                    newList.add(RoomItem(it.secondUserId, it.roomId, it.secondUserUrl, it.secondUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
+                if (it.firstUserId != user.id) {
+                    newList.add(
+                        RoomItem(
+                            it.firstUserId,
+                            it.roomId,
+                            it.firstUserUrl,
+                            it.firstUserName,
+                            it.messages.getLastMessage(),
+                            it.messages.getLastMessageTimestamp()
+                        )
+                    )
+                } else {
+                    newList.add(
+                        RoomItem(
+                            it.secondUserId,
+                            it.roomId,
+                            it.secondUserUrl,
+                            it.secondUserName,
+                            it.messages.getLastMessage(),
+                            it.messages.getLastMessageTimestamp()
+                        )
+                    )
                 }
 
             }
             _rooms.postValue(newList)
-        }else{
-            try{
-                val response = user.rooms?.map { async { databaseRepository.getRoomById(it.key) } }?.awaitAll()
+            _progressBar.value = View.GONE
+        } else {
+            try {
+                val response =
+                    user.rooms?.map { async { databaseRepository.getRoomById(it.key) } }?.awaitAll()
                 val newList = mutableListOf<RoomItem>()
                 response?.forEach {
-                    if(it.firstUserId != user.id){
-                        newList.add(RoomItem(it.firstUserId,it.roomId, it.firstUserUrl, it.firstUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
-                    }else{
-                        newList.add(RoomItem(it.secondUserId, it.roomId, it.secondUserUrl, it.secondUserName, it.messages.getLastMessage(), it.messages.getLastMessageTimestamp()))
+                    if (it.firstUserId != user.id) {
+                        newList.add(
+                            RoomItem(
+                                it.firstUserId,
+                                it.roomId,
+                                it.firstUserUrl,
+                                it.firstUserName,
+                                it.messages.getLastMessage(),
+                                it.messages.getLastMessageTimestamp()
+                            )
+                        )
+                    } else {
+                        newList.add(
+                            RoomItem(
+                                it.secondUserId,
+                                it.roomId,
+                                it.secondUserUrl,
+                                it.secondUserName,
+                                it.messages.getLastMessage(),
+                                it.messages.getLastMessageTimestamp()
+                            )
+                        )
                     }
 
                 }
                 _rooms.postValue(newList)
-            }catch (e: Exception){
+                _progressBar.value = View.GONE
+            } catch (e: Exception) {
                 _rooms.postValue(emptyList())
+                _progressBar.value = View.GONE
             }
         }
     }
