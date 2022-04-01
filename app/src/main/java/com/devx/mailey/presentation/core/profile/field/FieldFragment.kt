@@ -8,26 +8,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.model.User
 import com.devx.mailey.databinding.FragmentFieldBinding
 import dagger.hilt.android.AndroidEntryPoint
 import com.devx.mailey.presentation.core.CoreViewModel
+import com.devx.mailey.util.FirebaseConstants.FULL_NAME
 
 @AndroidEntryPoint
-class FieldFragment(private var fieldName: String) : Fragment() {
+class FieldFragment() : Fragment() {
     lateinit var binding: FragmentFieldBinding
-    private val viewModel: FieldViewModel by activityViewModels()
-    private lateinit var coreViewModel: CoreViewModel
-
-    private val _userData = MutableLiveData<User>()
-    val userData: LiveData<User>
-        get() = _userData
-
-    private val _saveBtnVisible = MutableLiveData<Int>()
-    val saveBtnVisible: LiveData<Int>
-        get() = _saveBtnVisible
+    private val viewModel: FieldViewModel by viewModels()
+    private val coreViewModel: CoreViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,8 +37,9 @@ class FieldFragment(private var fieldName: String) : Fragment() {
     private fun onSavePressed() {
         binding.apply {
             binding.profileFieldSaveChanges.setOnClickListener {
-                viewModel.changeField(fieldName, binding.Field.toString())
-                coreViewModel.setFragment(null)
+                viewModel.changeField(coreViewModel.getFieldName()!!, binding.Field.text.toString())
+                coreViewModel.setFieldName(null)
+                coreViewModel.backPressed()
             }
         }
     }

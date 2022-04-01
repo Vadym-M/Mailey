@@ -8,10 +8,12 @@ import com.devx.mailey.data.firebase.StorageService
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
+import com.devx.mailey.util.FirebaseConstants.ABOUT
 import com.devx.mailey.util.FirebaseConstants.EMAIL
 import com.devx.mailey.util.FirebaseConstants.FULL_NAME
 import com.devx.mailey.util.FirebaseConstants.IMAGES_URL
 import com.devx.mailey.util.FirebaseConstants.MESSAGES
+import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
 import com.devx.mailey.util.FirebaseConstants.ROOMS
 import com.devx.mailey.util.FirebaseConstants.USERS
 import com.devx.mailey.util.ResultState
@@ -231,8 +233,16 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         return database
     }
 
-    override fun changeUserField(fieldName: String, value: String) {
-        CurrentUser.changeFieldValue(fieldName, value)
+    override fun changeUserFullName(value: String) {
+        CurrentUser.fullName.setValue(value)
+    }
+
+    override fun changeUserAbout(value: String) {
+        CurrentUser.about.setValue(value)
+    }
+
+    override fun changeUserMobilePhone(value: String) {
+        CurrentUser.mobilePhone.setValue(value)
     }
 }
 
@@ -242,37 +252,9 @@ class CurrentUser {
         val imagesUrl = init.child(IMAGES_URL)
         val email = init.child(EMAIL)
         val fullName = init.child(FULL_NAME)
+        val about = init.child(ABOUT)
         val rooms = init.child(ROOMS)
-
-        fun changeFieldValue(fieldName: String, value: String) {
-            when (fieldName) {
-
-                "fullName" -> {
-                    setName(value)
-                }
-
-                "About" -> {
-                    setAbout(value)
-                }
-
-                "Phone" -> {
-                    setPhone(value)
-                }
-
-            }
-        }
-
-        private fun setName(value: String) {
-            init.child("fullName").setValue(value)
-        }
-
-        private fun setAbout(value: String) {
-            init.child("about").setValue(value)
-        }
-
-        private fun setPhone(value: String) {
-            init.child("phone").setValue(value)
-        }
+        val mobilePhone = init.child(MOBILE_PHONE)
     }
 }
 class FirebaseRoom{

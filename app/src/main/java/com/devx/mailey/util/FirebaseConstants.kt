@@ -7,5 +7,7 @@ object FirebaseConstants {
     const val USERS = "users"
     const val EMAIL = "email"
     const val FULL_NAME = "fullName"
+    const val ABOUT = "about"
+    const val MOBILE_PHONE = "mobilePhone"
     const val IMAGES_URL = "imagesUrl"
 }

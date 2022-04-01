@@ -19,6 +19,9 @@ import com.devx.mailey.presentation.core.CoreActivity
 import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.presentation.core.profile.field.FieldFragment
 import com.devx.mailey.util.Constants
+import com.devx.mailey.util.FirebaseConstants.ABOUT
+import com.devx.mailey.util.FirebaseConstants.FULL_NAME
+import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
 import com.devx.mailey.util.ResultState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -99,6 +102,8 @@ class ProfileFragment : Fragment() {
             binding.apply {
                 profileEmail.editText?.setText(user.email)
                 profileFullName.editText?.setText(user.fullName)
+                profileAbout.editText?.setText(user.about)
+                profilePhoneNumber.editText?.setText(user.mobilePhone)
             }
             if (user.imagesUrl.isNotEmpty()) {
                 Glide.with(this)
@@ -128,23 +133,23 @@ class ProfileFragment : Fragment() {
     private fun accountBlockListener() {
         binding.apply {
             profileFullName.editText?.setOnClickListener {
+                coreViewModel.setFieldName(FULL_NAME)
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.coreFragmentContainer, FieldFragment("fullName"))
+                    .replace(R.id.coreFragmentContainer, FieldFragment())
                     .addToBackStack(null)
                     .commit()
             }
-
             profileAbout.editText?.setOnClickListener {
-                // go to edit fragment throw viewModel
+                coreViewModel.setFieldName(ABOUT)
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.coreFragmentContainer, FieldFragment("about"))
+                    .replace(R.id.coreFragmentContainer, FieldFragment())
                     .addToBackStack(null)
                     .commit()
             }
             profilePhoneNumber.editText?.setOnClickListener {
-                // go to edit fragment throw viewModel
+                coreViewModel.setFieldName(MOBILE_PHONE)
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.coreFragmentContainer, FieldFragment("phone"))
+                    .replace(R.id.coreFragmentContainer, FieldFragment())
                     .addToBackStack(null)
                     .commit()
             }

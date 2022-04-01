@@ -25,7 +25,7 @@ class CoreViewModel @Inject constructor(
     private var currentUser: User? = null
     private var userJob: Job? = null
     private var localRoomData: LocalRoom? = null
-
+    private var fieldName: String? = null
 
     private val _user = MutableLiveData<User>()
     val user: LiveData<User>
@@ -78,6 +78,13 @@ class CoreViewModel @Inject constructor(
         return localRoomData
     }
 
+    fun setFieldName(fieldName: String?) {
+        this.fieldName = fieldName
+    }
+
+    fun getFieldName(): String? {
+        return this.fieldName
+    }
 
     private fun onRoomsChanged(userId: String) = viewModelScope.launch {
         databaseRepository.onRoomsChanged(_onRoomChanged, userId)

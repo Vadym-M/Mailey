@@ -5,6 +5,9 @@ import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
+import com.devx.mailey.util.FirebaseConstants.ABOUT
+import com.devx.mailey.util.FirebaseConstants.FULL_NAME
+import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
@@ -75,5 +78,21 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
         return roomList.find { it.roomId == roomId }
     }
 
-    fun changeUserField(fieldName: String, value: String) = databaseService.changeUserField(fieldName, value)
+    fun changeUserField(fieldName: String, value: String) {
+        when (fieldName) {
+            FULL_NAME -> {
+                currentUser?.fullName = value
+                databaseService.changeUserFullName(value)
+            }
+            ABOUT -> {
+                currentUser?.about = value
+                databaseService.changeUserAbout(value)
+            }
+            MOBILE_PHONE -> {
+                currentUser?.mobilePhone = value
+                databaseService.changeUserMobilePhone(value)
+            }
+        }
+
+    }
 }

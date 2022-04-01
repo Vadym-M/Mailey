@@ -7,10 +7,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FieldViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) :
-        ViewModel() {
+    ViewModel() {
 
-            fun changeField(name: String, value: String) {
+    fun changeField(name: String, value: String) {
+        databaseRepository.changeUserField(name, value)
+    }
 
-            }
-
-        }
+}

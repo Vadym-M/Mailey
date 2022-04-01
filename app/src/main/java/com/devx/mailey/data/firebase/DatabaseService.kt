@@ -30,5 +30,9 @@ interface DatabaseService {
 
     suspend fun pushRoomChanged(userId: String, roomId: String)
 
-    fun changeUserField(fieldName: String, value: String)
+    fun changeUserFullName(value: String)
+
+    fun changeUserAbout(value: String)
+
+    fun changeUserMobilePhone(value: String)
 }
