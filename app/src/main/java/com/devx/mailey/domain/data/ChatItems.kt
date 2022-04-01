@@ -1,4 +1,4 @@
-package com.devx.mailey.presentation.core.chat
+package com.devx.mailey.domain.data
 
 sealed class ChatItems<T>(val data:T?){
     class UserLeft<T>(data: T?): ChatItems<T>(data)

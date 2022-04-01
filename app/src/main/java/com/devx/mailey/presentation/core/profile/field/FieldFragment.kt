@@ -35,6 +35,7 @@ class FieldFragment(private var fieldName: String) : Fragment() {
     ): View {
 
         binding = FragmentFieldBinding.inflate(inflater, container, false)
+        onSavePressed()
 
         return binding.root
     }

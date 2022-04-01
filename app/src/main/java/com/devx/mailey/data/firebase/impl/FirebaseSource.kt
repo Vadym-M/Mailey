@@ -8,6 +8,12 @@ import com.devx.mailey.data.firebase.StorageService
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
+import com.devx.mailey.util.FirebaseConstants.EMAIL
+import com.devx.mailey.util.FirebaseConstants.FULL_NAME
+import com.devx.mailey.util.FirebaseConstants.IMAGES_URL
+import com.devx.mailey.util.FirebaseConstants.MESSAGES
+import com.devx.mailey.util.FirebaseConstants.ROOMS
+import com.devx.mailey.util.FirebaseConstants.USERS
 import com.devx.mailey.util.ResultState
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
@@ -101,12 +107,6 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     }
 
 
-    override suspend fun getRooms() {}
-    override fun writeMessage(user: User, message: Message, room: Room) {}
-    override fun writeMessage(nameUser: String, message: Message, room: Room): Boolean {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun getCurrentUserData(): User? {
         return CurrentUser.init.get().await().getValue(User::class.java)
     }
@@ -116,11 +116,12 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     }
 
     override suspend fun getRoomById(roomId: String): Room {
-        return database.child("rooms").child(roomId).get().await().getValue(Room::class.java)!!
+        return FirebaseRoom.ref(roomId).get().await().getValue(Room::class.java)!!
+
     }
 
     override suspend fun createRoom(room: Room): Boolean {
-        database.child("rooms").child(room.roomId).setValue(room)
+        FirebaseRoom.ref(room.roomId).setValue(room)
         return true
     }
 
@@ -128,7 +129,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         emit(ResultState.Loading(null))
         try {
             val list = mutableListOf<User>()
-            val response = database.child("users").get().await().children
+            val response = FirebaseUsers.ref().get().await().children
             for (i in response) {
                 val user = i.getValue(User::class.java)!!
                 if (user.fullName.lowercase().contains(str)) {
@@ -142,17 +143,17 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     }
 
     override suspend fun pushRoomIdToUser(roomId: String, userId: String) {
-        val key = database.child("users").child(userId).child("rooms").push().key
-        val values = mapOf("/users/$userId/rooms/$key" to roomId)
-        database.updateChildren(values)
+        val key = FirebaseUsers.refUserId(userId).child(ROOMS).push().key
+        val values = mapOf("/users/$userId/rooms/$roomId" to key)
+        database.updateChildren(values).await()
     }
 
     override suspend fun isRoomExist(roomId: String): Boolean {
-       return database.child("rooms").child(roomId).get().await().exists()
+       return FirebaseRoom.ref(roomId).get().await().exists()
     }
 
     override suspend fun pushMessage(roomId: String, msg: Message) {
-        val key = database.child("rooms").child(roomId).child("messages").push().key
+        val key = FirebaseRoom.refMessages(roomId).push().key
         val postValues = msg.toMap()
         val value = mapOf("/rooms/$roomId/messages/$key" to postValues)
         database.updateChildren(value)
@@ -163,46 +164,85 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         liveData: MutableLiveData<MutableMap<String, Message>>,
         roomId: String
     ) {
-       database.child("rooms").child(roomId).child("messages").addChildEventListener( object : ChildEventListener{
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-               val msg = snapshot.getValue<Message>()!!
-                val key = snapshot.key.toString()
-                val test = mutableMapOf<String, Message>(key to msg)
-                liveData.postValue(test)
+       FirebaseRoom.refMessages(roomId)
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val msg = snapshot.getValue<Message>()!!
+                    val key = snapshot.key.toString()
+                    val test = mutableMapOf(key to msg)
+                    liveData.postValue(test)
 
-            }
+                }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
 
-            }
+                }
 
-            override fun onChildRemoved(snapshot: DataSnapshot) {
+                override fun onChildRemoved(snapshot: DataSnapshot) {
 
-            }
+                }
 
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-            }
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
     }
 
+    override suspend fun onRoomsChanged(
+        liveData: MutableLiveData<String>, userId: String
+    ){
+        FirebaseUsers.refUserId(userId).child(ROOMS)
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val key = snapshot.key
+                    liveData.postValue(key)
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                    val key = snapshot.key
+                    liveData.postValue(key)
+                }
+
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+
+                }
+
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+    }
+
+    override suspend fun pushRoomChanged(userId: String, roomId: String) {
+        val key = FirebaseUsers.refUserId(userId).child("updatedRooms").push().key
+        val value = mapOf("/users/$userId/updatedRooms/$roomId" to key)
+        database.updateChildren(value)
+    }
 
     private fun initUser(id: String) {
-        currentUserRef = database.child("users").child(id)
+        currentUserRef = FirebaseUsers.refUserId(id)
+    }
+
+    fun getDatabaseRef(): DatabaseReference{
+        return database
     }
 
     override fun changeUserField(fieldName: String, value: String) {
         CurrentUser.changeFieldValue(fieldName, value)
     }
-
 }
 
 class CurrentUser {
     companion object {
         val init = FirebaseSource.currentUserRef
-        val imagesUrl = init.child("imagesUrl")
+        val imagesUrl = init.child(IMAGES_URL)
+        val email = init.child(EMAIL)
+        val fullName = init.child(FULL_NAME)
+        val rooms = init.child(ROOMS)
 
         fun changeFieldValue(fieldName: String, value: String) {
             when (fieldName) {
@@ -232,6 +272,26 @@ class CurrentUser {
 
         private fun setPhone(value: String) {
             init.child("phone").setValue(value)
+        }
+    }
+}
+class FirebaseRoom{
+    companion object{
+        fun ref(id:String):DatabaseReference{
+            return FirebaseSource.getDatabaseRef().child(ROOMS).child(id)
+        }
+        fun refMessages(id:String):DatabaseReference{
+            return FirebaseSource.getDatabaseRef().child(ROOMS).child(id).child(MESSAGES)
+        }
+    }
+}
+class FirebaseUsers{
+    companion object{
+        fun ref():DatabaseReference{
+            return FirebaseSource.getDatabaseRef().child(USERS)
+        }
+        fun refUserId(userId: String):DatabaseReference{
+            return FirebaseSource.getDatabaseRef().child(USERS).child(userId)
         }
     }
 }

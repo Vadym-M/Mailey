@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core.chat
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,12 +9,14 @@ import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
-import com.devx.mailey.util.Constants
+import com.devx.mailey.domain.data.ChatItems
+import com.devx.mailey.domain.data.LocalRoom
+import com.devx.mailey.util.getUserImage
+import com.devx.mailey.util.sortByTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.HashMap
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(private val databaseRepository: DatabaseRepository) :
@@ -27,59 +30,82 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
     private val onMessageListener: LiveData<MutableMap<String, Message>>
         get() = _onMessageListener
 
+    private val _initUser = MutableLiveData<Pair<String, String>>()
+    val initUser: LiveData<Pair<String, String>>
+        get() = _initUser
 
     private var currentMessages = mutableListOf<ChatItems<Message>>()
 
-    var user: User? = null
+    private var currentUser: User? = null
+    private var chatWithUserId: String? = null
     private var room: Room? = null
     fun initCurrentUser(user: User) {
-        this.user = user
+        this.currentUser = user
     }
 
-    fun initRoom(roomId: String, userId: String) {
-        getRoom(roomId, userId)
-
-    }
-
-    private fun getRoom(roomId: String, userId: String) = viewModelScope.launch {
-        try {
-            room = databaseRepository.getRoomById(roomId)
-            showMessages()
-        } catch (e: Exception) {
-            room = Room(HashMap(), roomId, userId, user!!.id)
-            showMessages()
-            databaseRepository.createRoom(room!!)
-            databaseRepository.pushRoomIdToUser(roomId, user!!.id)
-        }
-        messageListener(roomId)
-    }
-
-    private fun showMessages() {
-        if (currentMessages.isNullOrEmpty()) {
-            val listMsg = room!!.messages.values.toMutableList()
-            val list = mutableListOf<ChatItems<Message>>()
-            listMsg.forEach { item ->
-                if (item.userId == user!!.id) {
-                    list.add(ChatItems.UserRight(item))
-                } else {
-                    list.add(ChatItems.UserLeft(item))
+    fun initRoom(localRoom: LocalRoom) {
+        _initUser.value = Pair(localRoom.chatWithName, localRoom.chatWithImageUrl)
+        chatWithUserId = localRoom.chatWithId
+        val roomFromCache = databaseRepository.getRoomFromCache(localRoom.roomId)
+        if (roomFromCache != null) {
+            this.room = roomFromCache
+        } else {
+            viewModelScope.launch {
+                try {
+                    room = databaseRepository.getRoomById(localRoom.roomId)
+                } catch (e: Exception) {
+                    room = Room(
+                        HashMap(),
+                        localRoom.roomId,
+                        localRoom.chatWithId,
+                        localRoom.chatWithName,
+                        localRoom.chatWithImageUrl,
+                        currentUser!!.id,
+                        currentUser!!.fullName,
+                        currentUser!!.imagesUrl.getUserImage()
+                    )
+                    databaseRepository.createRoom(room!!)
+                    messageListener(localRoom.roomId)
                 }
             }
-            currentMessages = list
         }
-        currentMessages.sortWith(compareBy { it.data?.timestamp })
-        currentMessages.reverse()
+        if (room != null) {
+            showMessages()
+            messageListener(localRoom.roomId)
+        }
+    }
+
+
+    private fun showMessages() {
+        room!!.messages.values.toMutableList().forEach { item ->
+            val chatItem = if (item.userId == currentUser!!.id) {
+                ChatItems.UserRight(item)
+            } else {
+                ChatItems.UserLeft(item)
+            }
+            currentMessages.add(chatItem)
+        }
+        currentMessages.sortByTimestamp()
         _onMessageAdded.postValue(currentMessages)
     }
 
     fun sendMessage(str: String) {
-        val uniqueID = UUID.randomUUID().toString()
-        val imageUrl =
-            if (user!!.imagesUrl.isNotEmpty()) user!!.imagesUrl.first() else Constants.IMAGE_BLANK_URL
-        val msg = Message(uniqueID, str, user!!.id, Date().time, imageUrl, user!!.fullName)
+        val currentUser = currentUser!!
+        val currentRoom = room!!
+
+        val msg = Message(
+            id = UUID.randomUUID().toString(),
+            text = str,
+            timestamp = Date().time,
+            userId = currentUser.id,
+            userName = currentUser.fullName,
+            imageUrl = currentUser.imagesUrl.getUserImage(),
+        )
+
         currentMessages.add(0, ChatItems.UserRight(msg))
         _onMessageAdded.postValue(currentMessages)
-        pushMessage(room!!.roomId, msg)
+
+        pushMessageToDatabase(currentRoom.roomId, msg)
     }
 
     private fun messageListener(roomId: String) {
@@ -87,11 +113,12 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
         onMessageListener.observeForever { it ->
             if (currentMessages.isNullOrEmpty()) {
                 currentMessages.add(0, ChatItems.UserLeft(it.values.first()))
-            }
-            it.forEach {
-                if (it.value.userId != user?.id) {
-                    if (currentMessages.first().data?.timestamp != it.value.timestamp) {
-                        currentMessages.add(0, ChatItems.UserLeft(it.value))
+            } else {
+                it.forEach {
+                    if (it.value.userId != currentUser?.id) {
+                        if (currentMessages.first().data?.timestamp != it.value.timestamp) {
+                            currentMessages.add(0, ChatItems.UserLeft(it.value))
+                        }
                     }
                 }
             }
@@ -100,8 +127,10 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
     }
 
 
-    private fun pushMessage(roomId: String, msg: Message) = viewModelScope.launch {
+    private fun pushMessageToDatabase(roomId: String, msg: Message) = viewModelScope.launch {
         databaseRepository.pushMessage(roomId, msg)
+        databaseRepository.pushRoomIdToUser(roomId, chatWithUserId!!)
+        databaseRepository.pushRoomIdToUser(roomId, currentUser!!.id)
     }
 
 }

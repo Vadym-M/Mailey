@@ -12,5 +12,6 @@
         <item name="mt_hintColor">@color/white</item>
         <item name="mt_placeholderColor">@color/white</item>
         <item name="mt_highlightedTextColor">@color/searchBarTextHighlightColor</item>
+        <item name="android:layout_margin">0dp</item>
     </style>
 </resources>

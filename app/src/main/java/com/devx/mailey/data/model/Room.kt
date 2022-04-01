@@ -6,8 +6,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @IgnoreExtraProperties
-data class Room(val messages: MutableMap<String, Message>, val roomId: String, val leftUserId: String, val rightUserId: String) :
+data class Room(var messages: MutableMap<String, Message>, val roomId: String, val firstUserId: String, val firstUserName:String, val firstUserUrl:String, val secondUserId: String, val secondUserName: String, val secondUserUrl: String) :
     Parcelable {
-    constructor(): this(HashMap(), "",  "", "")
+    constructor(): this(HashMap(), "",  "", "", "","", "", "")
 
 }
