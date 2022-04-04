@@ -1,20 +1,19 @@
 package com.devx.mailey.presentation.core.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.devx.mailey.R
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.domain.data.ChatItems
-import com.devx.mailey.util.Constants
 import com.devx.mailey.util.toDate
+import com.devx.mailey.util.toHoursAndMinutes
 
 class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
     inner class ViewHolder(val view: View): RecyclerView.ViewHolder(view)  {
@@ -30,29 +29,20 @@ class ChatAdapter() : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
         private fun bindLeftMessage(data: Message?){
           val text = view.findViewById<TextView>(R.id.left_message_text)
           val time = view.findViewById<TextView>(R.id.left_message_time)
-          val image = view.findViewById<ImageView>(R.id.left_message_user_image)
             text.text = data?.text
-            time.text = data?.timestamp?.toDate()
-            Glide.with(image.rootView)
-                .load(data!!.imageUrl ?: Constants.IMAGE_BLANK_URL)
-                .circleCrop()
-                .into(image)
+            time.text = data?.timestamp?.toHoursAndMinutes()
 
         }
         private fun bindRightMessage(data: Message?){
             val text = view.findViewById<TextView>(R.id.right_message_text)
             val time = view.findViewById<TextView>(R.id.right_message_time)
-            val image = view.findViewById<ImageView>(R.id.right_message_user_image)
             text.text = data?.text
-            time.text = data?.timestamp?.toDate()
-            Glide.with(image.rootView)
-                .load(data!!.imageUrl ?: Constants.IMAGE_BLANK_URL)
-                .circleCrop()
-                .into(image)
+            time.text = data?.timestamp?.toHoursAndMinutes()
 
         }
         private fun bindOtherMessage(data: Message?){
-
+            val date = view.findViewById<TextView>(R.id.messagesDate)
+            date.text = data?.timestamp?.toDate()
         }
     }
     private val diffCallback = object : DiffUtil.ItemCallback<ChatItems<Message>>(){
