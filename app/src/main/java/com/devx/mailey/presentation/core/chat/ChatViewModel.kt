@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core.chat
 
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,6 +14,7 @@ import com.devx.mailey.domain.data.ChatItems
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.util.getUserImage
 import com.devx.mailey.util.sortByTimestamp
+import com.devx.mailey.util.toDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
@@ -77,13 +79,21 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
 
 
     private fun showMessages() {
+
+        val cMessages = mutableListOf<ChatItems<Message>>()
         room!!.messages.values.toMutableList().forEach { item ->
             val chatItem = if (item.userId == currentUser!!.id) {
                 ChatItems.UserRight(item)
             } else {
                 ChatItems.UserLeft(item)
             }
-            currentMessages.add(chatItem)
+            cMessages.add(chatItem)
+        }
+        val groups = cMessages.groupBy { it.data?.timestamp?.toDate() }
+
+        groups.forEach{
+            currentMessages.add(ChatItems.Other(it.value.first().data))
+            currentMessages.addAll(it.value)
         }
         currentMessages.sortByTimestamp()
         _onMessageAdded.postValue(currentMessages)
@@ -101,7 +111,9 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
             userName = currentUser.fullName,
             imageUrl = currentUser.imagesUrl.getUserImage(),
         )
-
+        if(currentMessages[0].data?.timestamp?.toDate() != msg.timestamp.toDate()){
+            currentMessages.add(0, ChatItems.Other(msg))
+        }
         currentMessages.add(0, ChatItems.UserRight(msg))
         _onMessageAdded.postValue(currentMessages)
 
@@ -117,6 +129,9 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
                 it.forEach {
                     if (it.value.userId != currentUser?.id) {
                         if (currentMessages.first().data?.timestamp != it.value.timestamp) {
+                            if(currentMessages[0].data?.timestamp?.toDate() != it.value.timestamp.toDate()){
+                                currentMessages.add(0, ChatItems.Other(it.value))
+                            }
                             currentMessages.add(0, ChatItems.UserLeft(it.value))
                         }
                     }

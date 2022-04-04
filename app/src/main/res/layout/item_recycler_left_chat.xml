@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/left_message_user_image"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="end"
-        android:layout_margin="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_account_circle_outline" />
-
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:backgroundTint="@color/left_message"
         app:cardCornerRadius="30dp"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/left_message_user_image"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
@@ -40,20 +31,21 @@
                 android:id="@+id/left_message_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constrainedWidth="true"
                 android:layout_margin="5dp"
                 android:maxWidth="200dp"
-                android:textColor="@color/white"
                 android:text="message text"
-                android:textSize="16sp" />
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constrainedWidth="true" />
 
             <TextView
                 android:id="@+id/left_message_time"
                 android:layout_width="40dp"
                 android:layout_height="20dp"
-                android:textColor="@color/white"
                 android:layout_marginStart="5dp"
-                android:text="13:22" />
+                android:text="13:22"
+                android:textColor="@color/browser_actions_bg_grey"
+                android:textSize="12sp" />
 
 
         </LinearLayout>

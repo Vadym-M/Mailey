@@ -17,9 +17,14 @@ fun <T> reverseList(list: List<T>): MutableList<T> {
     return list.indices.map { i: Int -> list[list.size - 1 - i] } as MutableList<T>
 }
 @SuppressLint("SimpleDateFormat")
-fun Long.toDate():String{
+fun Long.toHoursAndMinutes():String{
     val date = Date(this)
     val format = SimpleDateFormat("HH:mm")
+    return format.format(date)
+}
+fun Long.toDate():String{
+    val date = Date(this)
+    val format = SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH)
     return format.format(date)
 }
 
@@ -31,7 +36,7 @@ fun MutableMap<String, Message>.getLastMessage():String{
 fun MutableMap<String, Message>.getLastMessageTimestamp():String{
     val list = this.values.toMutableList()
     list.sortWith(compareBy { it.timestamp })
-    return if(list.isEmpty()) "00:00" else list.last().timestamp.toDate()
+    return if(list.isEmpty()) "00:00" else list.last().timestamp.toHoursAndMinutes()
 }
 
 fun MutableList<String>.getUserImage():String{
