@@ -111,7 +111,7 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
             userName = currentUser.fullName,
             imageUrl = currentUser.imagesUrl.getUserImage(),
         )
-        if(currentMessages[0].data?.timestamp?.toDate() != msg.timestamp.toDate()){
+        if(currentMessages.isNotEmpty() && currentMessages[0].data?.timestamp?.toDate() != msg.timestamp.toDate()){
             currentMessages.add(0, ChatItems.Other(msg))
         }
         currentMessages.add(0, ChatItems.UserRight(msg))

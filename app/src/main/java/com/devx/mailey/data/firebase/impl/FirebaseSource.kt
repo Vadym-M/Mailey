@@ -36,7 +36,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     private val database: DatabaseReference by lazy { Firebase.database.reference }
     private val storageRef: StorageReference by lazy { Firebase.storage.reference }
 
-    lateinit var currentUserRef: DatabaseReference
+    var currentUserRef: DatabaseReference? = null
 
     override suspend fun register(
         fullName: String,
@@ -57,6 +57,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
                 )
                 database.child("users").child(id.toString()).setValue(user)
             }.await()
+            currentUserRef = database.child(USERS).child(firebaseAuth.currentUser!!.uid)
             emit(ResultState.Success(result))
         } catch (e: Exception) {
             emit(ResultState.Error(e.message))
@@ -68,6 +69,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
             emit(ResultState.Loading(null))
             try {
                 val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+                currentUserRef = database.child(USERS).child(firebaseAuth.currentUser!!.uid)
                 emit(ResultState.Success(result))
             } catch (e: Exception) {
                 emit(ResultState.Error(e.message))
@@ -75,7 +77,9 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
 
     override suspend fun getUser(): FirebaseUser? {
-        initUser(firebaseAuth.currentUser!!.uid)
+        firebaseAuth.currentUser?.let {
+            currentUserRef = database.child(USERS).child(firebaseAuth.currentUser!!.uid)
+        }
         return firebaseAuth.currentUser
     }
 
@@ -110,11 +114,11 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
 
 
     override suspend fun getCurrentUserData(): User? {
-        return CurrentUser.init.get().await().getValue(User::class.java)
+        return CurrentUser.init?.get()?.await()?.getValue(User::class.java)
     }
 
     override suspend fun updateImagesUrl(urls: List<String>) {
-        CurrentUser.imagesUrl.setValue(urls).await()
+        CurrentUser.imagesUrl?.setValue(urls)?.await()
     }
 
     override suspend fun getRoomById(roomId: String): Room {
@@ -225,36 +229,32 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         database.updateChildren(value)
     }
 
-    private fun initUser(id: String) {
-        currentUserRef = FirebaseUsers.refUserId(id)
-    }
-
     fun getDatabaseRef(): DatabaseReference{
         return database
     }
 
     override fun changeUserFullName(value: String) {
-        CurrentUser.fullName.setValue(value)
+        CurrentUser.fullName?.setValue(value)
     }
 
     override fun changeUserAbout(value: String) {
-        CurrentUser.about.setValue(value)
+        CurrentUser.about?.setValue(value)
     }
 
     override fun changeUserMobilePhone(value: String) {
-        CurrentUser.mobilePhone.setValue(value)
+        CurrentUser.mobilePhone?.setValue(value)
     }
 }
 
 class CurrentUser {
     companion object {
         val init = FirebaseSource.currentUserRef
-        val imagesUrl = init.child(IMAGES_URL)
-        val email = init.child(EMAIL)
-        val fullName = init.child(FULL_NAME)
-        val about = init.child(ABOUT)
-        val rooms = init.child(ROOMS)
-        val mobilePhone = init.child(MOBILE_PHONE)
+        val imagesUrl = init?.child(IMAGES_URL)
+        val email = init?.child(EMAIL)
+        val fullName = init?.child(FULL_NAME)
+        val about = init?.child(ABOUT)
+        val rooms = init?.child(ROOMS)
+        val mobilePhone = init?.child(MOBILE_PHONE)
     }
 }
 class FirebaseRoom{
