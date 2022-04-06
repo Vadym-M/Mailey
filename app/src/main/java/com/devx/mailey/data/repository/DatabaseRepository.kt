@@ -32,6 +32,7 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
         val res = if (urls?.add(url) == true) urls else listOf(url)
         databaseService.updateImagesUrl(res)
     }
+    suspend fun getUserById(userId: String) = databaseService.getUserById(userId)
 
     suspend fun searchUserByName(str: String) = databaseService.searchUserByName(str)
     suspend fun createRoom(room: Room) = databaseService.createRoom(room)

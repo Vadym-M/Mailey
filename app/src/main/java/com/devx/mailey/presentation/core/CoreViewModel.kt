@@ -12,9 +12,12 @@ import com.devx.mailey.domain.data.RoomItem
 import com.devx.mailey.util.Event
 import com.devx.mailey.util.getLastMessage
 import com.devx.mailey.util.getLastMessageTimestamp
+import com.devx.mailey.util.getUserImage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,27 +96,36 @@ class CoreViewModel @Inject constructor(
                 databaseRepository.getRoomById(it)
                 val list = databaseRepository.getRooms()
                 val newList = mutableListOf<RoomItem>()
-                list.forEach {
-                    if (it.firstUserId == currentUser!!.id) {
+                for(count in list.indices) {
+                    if (list[count].firstUserId == currentUser!!.id) {
+
+                        val url =
+                            withContext(Dispatchers.Default) {
+                                databaseRepository.getUserById(list[count].secondUserId).imagesUrl.getUserImage()
+                            }
                         newList.add(
                             RoomItem(
-                                userId = it.secondUserId,
-                                roomId = it.roomId,
-                                userUrl = it.secondUserUrl,
-                                userName = it.secondUserName,
-                                lastMessage = it.messages.getLastMessage(),
-                                lastMessageTimestamp = it.messages.getLastMessageTimestamp()
+                                userId = list[count].secondUserId,
+                                roomId = list[count].roomId,
+                                userUrl = url,
+                                userName = list[count].secondUserName,
+                                lastMessage = list[count].messages.getLastMessage(),
+                                lastMessageTimestamp = list[count].messages.getLastMessageTimestamp()
                             )
                         )
                     } else {
+                        val url =
+                            withContext(Dispatchers.Default) {
+                                databaseRepository.getUserById(list[count].firstUserId).imagesUrl.getUserImage()
+                            }
                         newList.add(
                             RoomItem(
-                                userId = it.firstUserId,
-                                roomId = it.roomId,
-                                userUrl = it.firstUserUrl,
-                                userName = it.firstUserName,
-                                lastMessage = it.messages.getLastMessage(),
-                                lastMessageTimestamp = it.messages.getLastMessageTimestamp()
+                                userId = list[count].firstUserId,
+                                roomId = list[count].roomId,
+                                userUrl = url,
+                                userName = list[count].firstUserName,
+                                lastMessage = list[count].messages.getLastMessage(),
+                                lastMessageTimestamp = list[count].messages.getLastMessageTimestamp()
                             )
                         )
                     }

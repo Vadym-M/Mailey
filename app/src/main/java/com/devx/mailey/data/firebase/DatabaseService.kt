@@ -12,6 +12,8 @@ interface DatabaseService {
 
     suspend fun updateImagesUrl(urls: List<String>)
 
+    suspend fun getUserById(id:String):User
+
     suspend fun getRoomById(roomId: String): Room
 
     suspend fun createRoom(room: Room): Boolean

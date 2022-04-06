@@ -121,6 +121,10 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         CurrentUser.imagesUrl?.setValue(urls)?.await()
     }
 
+    override suspend fun getUserById(id: String): User {
+        return FirebaseUsers.refUserId(id).get().await().getValue(User::class.java)!!
+    }
+
     override suspend fun getRoomById(roomId: String): Room {
         return FirebaseRoom.ref(roomId).get().await().getValue(Room::class.java)!!
 

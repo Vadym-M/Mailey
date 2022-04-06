@@ -61,10 +61,8 @@ class ChatViewModel @Inject constructor(private val databaseRepository: Database
                         localRoom.roomId,
                         localRoom.chatWithId,
                         localRoom.chatWithName,
-                        localRoom.chatWithImageUrl,
                         currentUser!!.id,
                         currentUser!!.fullName,
-                        currentUser!!.imagesUrl.getUserImage()
                     )
                     databaseRepository.createRoom(room!!)
                     messageListener(localRoom.roomId)

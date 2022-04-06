@@ -46,6 +46,7 @@ class ProfileViewModel @Inject constructor(
 
     fun addImageToUser(url:String) = viewModelScope.launch{
         databaseRepository.addImageUrl(url)
+
     }
 
 
