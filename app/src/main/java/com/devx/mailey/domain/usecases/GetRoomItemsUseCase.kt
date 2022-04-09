@@ -23,7 +23,7 @@ class GetRoomItemsUseCase @Inject constructor(private val databaseRepository: Da
                     val roomsNetwork =
                         user.rooms?.map { async { databaseRepository.getRoomById(it.key) } }
                             ?.awaitAll()
-                    return@withContext mapToRoomItems(roomsNetwork!!, user)
+                    return@withContext mapToRoomItems(roomsNetwork ?: emptyList(), user)
 
                 }
             }

@@ -47,6 +47,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun initRoom(localRoom: LocalRoom) {
+        if(currentMessages.isEmpty()){
         roomId = localRoom.roomId
         _initUser.value = Pair(localRoom.chatWithName, localRoom.chatWithImageUrl)
         chatWithUserId = localRoom.chatWithId
@@ -67,7 +68,7 @@ class ChatViewModel @Inject constructor(
                 )
             }
             roomListener()
-        }
+        }}
     }
 
     fun sendMessage(str: String) {
