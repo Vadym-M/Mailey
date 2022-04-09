@@ -6,9 +6,16 @@ import com.google.firebase.database.ServerValue
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Message(val id:String, val text : String, val userId:String, val timestamp: Long, val imageUrl:String?, val userName:String) :
+data class Message(
+    val id: String? = null,
+    val text: String? = null,
+    val userId: String? = null,
+    val timestamp: Long,
+    val imageUrl: String? = null,
+    val userName: String? = null
+) :
     Parcelable {
-    constructor(): this("","", "", 0,"","")
+    constructor() : this("", "", "", 0, "", "")
 
     @Exclude
     fun toMap(): Map<String, Any?> {

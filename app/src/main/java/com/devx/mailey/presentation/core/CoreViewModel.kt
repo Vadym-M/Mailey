@@ -9,6 +9,7 @@ import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.domain.data.RoomItem
+import com.devx.mailey.domain.usecases.GetRoomItemsUseCase
 import com.devx.mailey.util.Event
 import com.devx.mailey.util.getLastMessage
 import com.devx.mailey.util.getLastMessageTimestamp
@@ -22,7 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CoreViewModel @Inject constructor(
-    private val databaseRepository: DatabaseRepository
+    private val databaseRepository: DatabaseRepository,
+    private val getRoomItemsUseCase: GetRoomItemsUseCase
 ) :
     ViewModel() {
     private var currentUser: User? = null
@@ -42,12 +44,8 @@ class CoreViewModel @Inject constructor(
     val backPressed: LiveData<Event<String>>
         get() = _backPressed
 
-    private val _onRoomChanged = MutableLiveData<String>()
-    private val onRoomChanged: LiveData<String>
-        get() = _onRoomChanged
-
-    private val _roomsChanged = MutableLiveData<MutableList<RoomItem>>()
-    val roomsChanged: LiveData<MutableList<RoomItem>>
+    private val _roomsChanged = MutableLiveData<List<RoomItem>>()
+    val roomsChanged: LiveData<List<RoomItem>>
         get() = _roomsChanged
 
 
@@ -90,47 +88,12 @@ class CoreViewModel @Inject constructor(
     }
 
     private fun onRoomsChanged(userId: String) = viewModelScope.launch {
-        databaseRepository.onRoomsChanged(_onRoomChanged, userId)
-        onRoomChanged.observeForever {
+        val listener = databaseRepository.onRoomsChanged(userId)
+        listener.observeForever {
             viewModelScope.launch {
                 databaseRepository.getRoomById(it)
-                val list = databaseRepository.getRooms()
-                val newList = mutableListOf<RoomItem>()
-                for(count in list.indices) {
-                    if (list[count].firstUserId == currentUser!!.id) {
-
-                        val url =
-                            withContext(Dispatchers.Default) {
-                                databaseRepository.getUserById(list[count].secondUserId).imagesUrl.getUserImage()
-                            }
-                        newList.add(
-                            RoomItem(
-                                userId = list[count].secondUserId,
-                                roomId = list[count].roomId,
-                                userUrl = url,
-                                userName = list[count].secondUserName,
-                                lastMessage = list[count].messages.getLastMessage(),
-                                lastMessageTimestamp = list[count].messages.getLastMessageTimestamp()
-                            )
-                        )
-                    } else {
-                        val url =
-                            withContext(Dispatchers.Default) {
-                                databaseRepository.getUserById(list[count].firstUserId).imagesUrl.getUserImage()
-                            }
-                        newList.add(
-                            RoomItem(
-                                userId = list[count].firstUserId,
-                                roomId = list[count].roomId,
-                                userUrl = url,
-                                userName = list[count].firstUserName,
-                                lastMessage = list[count].messages.getLastMessage(),
-                                lastMessageTimestamp = list[count].messages.getLastMessageTimestamp()
-                            )
-                        )
-                    }
-                }
-                _roomsChanged.postValue(newList)
+                val roomItems = getRoomItemsUseCase.getRoomItems(currentUser!!)
+                _roomsChanged.postValue(roomItems)
             }
         }
     }

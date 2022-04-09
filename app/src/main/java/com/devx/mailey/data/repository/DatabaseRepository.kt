@@ -1,5 +1,6 @@
 package com.devx.mailey.data.repository
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.model.Message
@@ -12,12 +13,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
-class DatabaseRepository @Inject constructor(private val databaseService: DatabaseService) {
+class DatabaseRepository @Inject constructor(private val databaseService: DatabaseService) :
+    DatabaseService {
 
     private val userMutex = Mutex()
     private var currentUser: User? = null
     private val roomList: MutableList<Room> = mutableListOf()
-    suspend fun getCurrentUserData(): User {
+
+    override suspend fun getCurrentUserData(): User {
         if (currentUser == null) {
             val user = databaseService.getCurrentUserData()
             userMutex.withLock {
@@ -27,19 +30,21 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
         return userMutex.withLock { this.currentUser!! }
     }
 
-    suspend fun addImageUrl(url: String) {
-        val urls = currentUser?.imagesUrl
-        val res = if (urls?.add(url) == true) urls else listOf(url)
-        databaseService.updateImagesUrl(res)
+    override suspend fun updateImagesUrl(urls: List<String>) {
+        val urlsList = currentUser?.imagesUrl
+        databaseService.updateImagesUrl(urlsList?.plus(urls) ?: emptyList())
     }
-    suspend fun getUserById(userId: String) = databaseService.getUserById(userId)
 
-    suspend fun searchUserByName(str: String) = databaseService.searchUserByName(str)
-    suspend fun createRoom(room: Room) = databaseService.createRoom(room)
-    suspend fun pushRoomIdToUser(roomId: String, userId: String) =
+    override suspend fun getUserById(id: String) = databaseService.getUserById(id)
+
+    override suspend fun searchUserByName(str: String) = databaseService.searchUserByName(str)
+
+    override suspend fun createRoom(room: Room) = databaseService.createRoom(room)
+
+    override suspend fun pushRoomIdToUser(roomId: String, userId: String) =
         databaseService.pushRoomIdToUser(roomId, userId)
 
-    suspend fun getRoomById(roomId: String): Room {
+    override suspend fun getRoomById(roomId: String): Room {
         val room = databaseService.getRoomById(roomId)
         if (roomList.isNotEmpty()) {
             roomList.forEachIndexed { index, item ->
@@ -53,16 +58,37 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
         } else {
             roomList.add(room)
         }
-
         return room
     }
 
-    suspend fun pushMessage(roomId: String, msg: Message) = databaseService.pushMessage(roomId, msg)
-    fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String) =
+    override suspend fun pushMessage(roomId: String, msg: Message) =
+        databaseService.pushMessage(roomId, msg)
+
+    override fun addMessageListener(
+        liveData: MutableLiveData<MutableMap<String, Message>>,
+        roomId: String
+    ) =
         databaseService.addMessageListener(liveData, roomId)
 
-    suspend fun onRoomsChanged(liveData: MutableLiveData<String>, userId: String) =
-        databaseService.onRoomsChanged(liveData, userId)
+    override suspend fun onRoomsChanged(userId: String) =
+        databaseService.onRoomsChanged(userId)
+
+    override suspend fun onRoomChanged(userId: String, roomId: String) = databaseService.onRoomChanged(userId, roomId)
+
+    override fun changeUserFullName(value: String) {
+        currentUser?.fullName = value
+        databaseService.changeUserFullName(value)
+    }
+
+    override fun changeUserAbout(value: String) {
+        currentUser?.about = value
+        databaseService.changeUserAbout(value)
+    }
+
+    override fun changeUserMobilePhone(value: String) {
+        currentUser?.mobilePhone = value
+        databaseService.changeUserMobilePhone(value)
+    }
 
     fun getRooms(): MutableList<Room> {
 
@@ -77,23 +103,5 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
 
     fun getRoomFromCache(roomId: String): Room? {
         return roomList.find { it.roomId == roomId }
-    }
-
-    fun changeUserField(fieldName: String, value: String) {
-        when (fieldName) {
-            FULL_NAME -> {
-                currentUser?.fullName = value
-                databaseService.changeUserFullName(value)
-            }
-            ABOUT -> {
-                currentUser?.about = value
-                databaseService.changeUserAbout(value)
-            }
-            MOBILE_PHONE -> {
-                currentUser?.mobilePhone = value
-                databaseService.changeUserMobilePhone(value)
-            }
-        }
-
     }
 }

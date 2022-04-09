@@ -1,5 +1,6 @@
 package com.devx.mailey.data.firebase
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
@@ -22,15 +23,14 @@ interface DatabaseService {
 
     suspend fun pushRoomIdToUser(roomId: String, userId: String)
 
-    suspend fun isRoomExist(roomId: String): Boolean
-
     suspend fun pushMessage(roomId: String, msg: Message)
 
     fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String)
 
-    suspend fun onRoomsChanged(liveData: MutableLiveData<String>, userId: String)
+    suspend fun onRoomsChanged(userId: String): LiveData<String>
+    suspend fun onRoomChanged(userId: String, roomId: String): LiveData<String>
 
-    suspend fun pushRoomChanged(userId: String, roomId: String)
+//    suspend fun pushRoomChanged(userId: String, roomId: String)
 
     fun changeUserFullName(value: String)
 

@@ -1,6 +1,8 @@
 package com.devx.mailey.data.firebase.impl
 
 import android.net.Uri
+import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.AuthService
 import com.devx.mailey.data.firebase.DatabaseService
@@ -17,6 +19,7 @@ import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
 import com.devx.mailey.util.FirebaseConstants.ROOMS
 import com.devx.mailey.util.FirebaseConstants.USERS
 import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.toDate
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -35,6 +38,13 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     private val firebaseAuth: FirebaseAuth by lazy { Firebase.auth }
     private val database: DatabaseReference by lazy { Firebase.database.reference }
     private val storageRef: StorageReference by lazy { Firebase.storage.reference }
+
+    private val _onRoomsChanged = MutableLiveData<String>()
+    private val onRoomsChanged: LiveData<String>
+        get() = _onRoomsChanged
+    private val _roomListener = MutableLiveData<String>()
+    private val roomListener: LiveData<String>
+        get() = _roomListener
 
     var currentUserRef: DatabaseReference? = null
 
@@ -158,10 +168,6 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         database.updateChildren(values).await()
     }
 
-    override suspend fun isRoomExist(roomId: String): Boolean {
-       return FirebaseRoom.ref(roomId).get().await().exists()
-    }
-
     override suspend fun pushMessage(roomId: String, msg: Message) {
         val key = FirebaseRoom.refMessages(roomId).push().key
         val postValues = msg.toMap()
@@ -200,19 +206,19 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
             })
     }
 
-    override suspend fun onRoomsChanged(
-        liveData: MutableLiveData<String>, userId: String
-    ){
+    override suspend fun onRoomsChanged(userId: String): LiveData<String>{
         FirebaseUsers.refUserId(userId).child(ROOMS)
             .addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                     val key = snapshot.key
-                    liveData.postValue(key)
+                    key?.let{
+                        _onRoomsChanged.postValue(key!!)}
                 }
 
                 override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                     val key = snapshot.key
-                    liveData.postValue(key)
+                    key?.let{
+                        _onRoomsChanged.postValue(key!!)}
                 }
 
                 override fun onChildRemoved(snapshot: DataSnapshot) {
@@ -225,13 +231,28 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
                 override fun onCancelled(error: DatabaseError) {
                 }
             })
+        return onRoomsChanged
     }
 
-    override suspend fun pushRoomChanged(userId: String, roomId: String) {
-        val key = FirebaseUsers.refUserId(userId).child("updatedRooms").push().key
-        val value = mapOf("/users/$userId/updatedRooms/$roomId" to key)
-        database.updateChildren(value)
+    override suspend fun onRoomChanged(userId: String, roomId: String): LiveData<String> {
+        CurrentUser.rooms?.child(roomId)?.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val response = snapshot.key
+                _roomListener.postValue(response.toString())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+        return roomListener
     }
+
+//    override suspend fun pushRoomChanged(userId: String, roomId: String) {
+//        val key = FirebaseUsers.refUserId(userId).child("updatedRooms").push().key
+//        val value = mapOf("/users/$userId/updatedRooms/$roomId" to key)
+//        database.updateChildren(value)
+//    }
 
     fun getDatabaseRef(): DatabaseReference{
         return database

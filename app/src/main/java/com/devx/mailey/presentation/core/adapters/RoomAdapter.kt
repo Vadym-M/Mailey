@@ -1,6 +1,7 @@
 package com.devx.mailey.presentation.core.adapters
 
 import android.content.Context
+import android.provider.SyncStateContract
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.devx.mailey.databinding.ItemRecyclerRoomBinding
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.domain.data.RoomItem
-
+import com.devx.mailey.util.Constants
 
 
 class RoomAdapter() : RecyclerView.Adapter<RoomAdapter.ViewHolder>() {
@@ -21,7 +22,7 @@ class RoomAdapter() : RecyclerView.Adapter<RoomAdapter.ViewHolder>() {
         init {
             binding.root.setOnClickListener {
                 val currentRoom = rooms[adapterPosition]
-                val roomData = LocalRoom(currentRoom.roomId, currentRoom.userName, currentRoom.userId, currentRoom.userUrl)
+                val roomData = LocalRoom(currentRoom.roomId, currentRoom.userName, currentRoom.userId, currentRoom.userUrl?: Constants.IMAGE_BLANK_URL)
                 onItemClick?.invoke(roomData)
             }
         }
@@ -38,7 +39,7 @@ class RoomAdapter() : RecyclerView.Adapter<RoomAdapter.ViewHolder>() {
     }
     lateinit var context: Context
     private val differ = AsyncListDiffer(this, diffCallback)
-    var rooms: MutableList<RoomItem>
+    var rooms: List<RoomItem>
         get() = differ.currentList
         set(value) {
             differ.submitList(value)
