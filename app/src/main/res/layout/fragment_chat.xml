@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.core.chat.ChatFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".presentation.core.chat.ChatFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -41,8 +41,8 @@
                     android:layout_gravity="bottom|end"
                     android:layout_marginEnd="14dp"
                     android:background="@android:color/transparent"
-                    app:iconTint="@color/white"
-                    app:icon="@drawable/ic_keyboard_backspace" />
+                    app:icon="@drawable/ic_keyboard_backspace"
+                    app:iconTint="@color/white" />
 
                 <ImageView
                     android:id="@+id/chatUserImage"
@@ -52,14 +52,14 @@
                     app:srcCompat="@drawable/ic_account_circle_outline" />
 
                 <TextView
-                    android:layout_weight="1"
                     android:id="@+id/chatUserName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginStart="10dp"
-                    android:textColor="@color/white"
-                    android:text="name" />
+                    android:layout_weight="1"
+                    android:text="name"
+                    android:textColor="@color/white" />
 
                 <TextView
                     android:id="@+id/textViewOptions"
@@ -76,27 +76,43 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/chatRecycler"
-        android:layout_weight="1"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chatRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/chatProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:visibility="gone"/>
+    </FrameLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:orientation="horizontal">
+
         <EditText
             android:id="@+id/chatEditText"
-            android:layout_weight="1"
             android:layout_width="0dp"
-            android:textSize="16sp"
-            android:paddingBottom="5dp"
-            android:layout_marginStart="10dp"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine|textCapSentences"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
             android:background="@android:color/transparent"
-            android:hint="Enter text"/>
+            android:hint="Enter text"
+            android:inputType="textMultiLine|textCapSentences"
+            android:paddingBottom="5dp"
+            android:textSize="16sp" />
+
         <Button
             android:id="@+id/sendBtn"
             style="@style/Widget.App.Button.OutlinedButton.IconOnly"

@@ -40,6 +40,7 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initUserObserver()
+        progressBarListener()
         binding.sendBtn.setOnClickListener {
 
             viewModel.sendMessage(binding.chatEditText.text.toString())
@@ -85,6 +86,11 @@ class ChatFragment : Fragment() {
     private fun onBackPressed(){
         binding.chatBackBtn.setOnClickListener {
          coreViewModel.backPressed()
+        }
+    }
+    private fun progressBarListener(){
+        viewModel.progressBar.observe(viewLifecycleOwner){
+            binding.chatProgressBar.visibility = it
         }
     }
 }

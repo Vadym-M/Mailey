@@ -2,6 +2,7 @@ package com.devx.mailey.presentation.core.chat
 
 
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -43,6 +44,9 @@ class ChatViewModel @Inject constructor(
     private val _initUser = MutableLiveData<Pair<String, String>>()
     val initUser: LiveData<Pair<String, String>>
         get() = _initUser
+    private val _progressBar = MutableLiveData<Int>()
+    val progressBar: LiveData<Int>
+        get() = _progressBar
 
     private var currentMessages = mutableListOf<ChatItems<Message>>()
 
@@ -62,9 +66,10 @@ class ChatViewModel @Inject constructor(
             chatWithUserId = localRoom.chatWithId
         getRoomUseCase.roomExists(localRoom.roomId).onEach {
             when(it){
-                is Resource.Loading ->{}
+                is Resource.Loading ->{
+                    _progressBar.postValue(View.VISIBLE)
+                }
                 is Resource.Success ->{
-                    Log.d("debug", it.data!!.toString())
                     if(it.data!!) {
                         getAndSortMessages()
                         roomListener()
@@ -80,9 +85,12 @@ class ChatViewModel @Inject constructor(
                             )
                         )
                         roomListener()
+                        _progressBar.postValue(View.GONE)
                     }
                 }
-                is Resource.Error ->{ Log.d("debug", it.msg.toString())}
+                is Resource.Error ->{
+                    _progressBar.postValue(View.GONE)
+                    Log.d("debug", it.msg.toString())}
             }
         }.launchIn(viewModelScope)
 
@@ -135,12 +143,15 @@ class ChatViewModel @Inject constructor(
                             )
                         )
                     }
+                    _progressBar.postValue(View.GONE)
                     _onMessageAdded.postValue(currentMessages)
                 }
                 is Resource.Error -> {
+                    _progressBar.postValue(View.GONE)
+                }
+                is Resource.Loading -> {
 
                 }
-                is Resource.Loading -> {}
             }
         }.launchIn(viewModelScope)
     }
