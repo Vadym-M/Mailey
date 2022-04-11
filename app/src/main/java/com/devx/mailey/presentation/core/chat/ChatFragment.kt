@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,6 +42,7 @@ class ChatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initUserObserver()
         progressBarListener()
+        toastMessageListener()
         binding.sendBtn.setOnClickListener {
 
             viewModel.sendMessage(binding.chatEditText.text.toString())
@@ -91,6 +93,12 @@ class ChatFragment : Fragment() {
     private fun progressBarListener(){
         viewModel.progressBar.observe(viewLifecycleOwner){
             binding.chatProgressBar.visibility = it
+        }
+    }
+
+    private fun toastMessageListener(){
+        viewModel.toastMessage.observe(viewLifecycleOwner){
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
         }
     }
 }

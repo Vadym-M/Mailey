@@ -14,7 +14,6 @@ import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.ChatItems
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.domain.usecases.GetMessagesUseCase
-import com.devx.mailey.domain.usecases.GetRoomItemsUseCase
 import com.devx.mailey.domain.usecases.GetRoomUseCase
 import com.devx.mailey.domain.usecases.RoomListenerUseCase
 import com.devx.mailey.util.Resource
@@ -24,7 +23,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.lang.Error
 import java.util.*
 import javax.inject.Inject
 
@@ -48,6 +46,10 @@ class ChatViewModel @Inject constructor(
     val progressBar: LiveData<Int>
         get() = _progressBar
 
+    private val _toastMessage = MutableLiveData<String>()
+    val toastMessage: LiveData<String>
+        get() = _toastMessage
+
     private var currentMessages = mutableListOf<ChatItems<Message>>()
 
     private var currentUser: User? = null
@@ -61,19 +63,19 @@ class ChatViewModel @Inject constructor(
 
     fun initRoom(localRoom: LocalRoom) {
         this.localRoom = localRoom
-            roomId = localRoom.roomId
-            _initUser.value = Pair(localRoom.chatWithName, localRoom.chatWithImageUrl)
-            chatWithUserId = localRoom.chatWithId
+        roomId = localRoom.roomId
+        _initUser.value = Pair(localRoom.chatWithName, localRoom.chatWithImageUrl)
+        chatWithUserId = localRoom.chatWithId
         getRoomUseCase.roomExists(localRoom.roomId).onEach {
-            when(it){
-                is Resource.Loading ->{
+            when (it) {
+                is Resource.Loading -> {
                     _progressBar.postValue(View.VISIBLE)
                 }
-                is Resource.Success ->{
-                    if(it.data!!) {
+                is Resource.Success -> {
+                    if (it.data!!) {
                         getAndSortMessages()
                         roomListener()
-                    }else{
+                    } else {
                         databaseRepository.createRoom(
                             Room(
                                 HashMap(),
@@ -88,32 +90,35 @@ class ChatViewModel @Inject constructor(
                         _progressBar.postValue(View.GONE)
                     }
                 }
-                is Resource.Error ->{
+                is Resource.Error -> {
                     _progressBar.postValue(View.GONE)
-                    Log.d("debug", it.msg.toString())}
+                    Log.d("debug", it.msg.toString())
+                }
             }
         }.launchIn(viewModelScope)
 
     }
 
     fun sendMessage(str: String) {
-        val currentUser = currentUser!!
+        val handledMsg = handleMessage(str)
+        if (verifyMessage(handledMsg)) {
 
-        val msg = Message(
-            id = UUID.randomUUID().toString(),
-            text = str,
-            timestamp = Date().time,
-            userId = currentUser.id,
-            userName = currentUser.fullName,
-            imageUrl = currentUser.imagesUrl.getUserImage(),
-        )
-        if (currentMessages.isNotEmpty() && currentMessages[0].data?.timestamp?.toDate() != msg.timestamp.toDate()) {
-            currentMessages.add(0, ChatItems.Other(msg))
+            val msg = Message(
+                id = UUID.randomUUID().toString(),
+                text = handledMsg,
+                timestamp = Date().time,
+                userId = currentUser!!.id,
+                userName = currentUser!!.fullName,
+                imageUrl = currentUser!!.imagesUrl.getUserImage(),
+            )
+            if (currentMessages.isNotEmpty() && currentMessages[0].data?.timestamp?.toDate() != msg.timestamp.toDate()) {
+                currentMessages.add(0, ChatItems.Other(msg))
+            }
+            currentMessages.add(0, ChatItems.UserRight(msg))
+            _onMessageAdded.postValue(currentMessages)
+
+            pushMessageToDatabase(roomId!!, msg)
         }
-        currentMessages.add(0, ChatItems.UserRight(msg))
-        _onMessageAdded.postValue(currentMessages)
-
-        pushMessageToDatabase(roomId!!, msg)
     }
 
     private fun roomListener() = viewModelScope.launch {
@@ -124,9 +129,9 @@ class ChatViewModel @Inject constructor(
     }
 
     private fun getAndSortMessages() {
-        getMessagesUseCase.getMessages(roomId = roomId!!).onEach { item->
-            when(item){
-                is Resource.Success ->{
+        getMessagesUseCase.getMessages(roomId = roomId!!).onEach { item ->
+            when (item) {
+                is Resource.Success -> {
                     currentMessages.clear()
                     item.data?.forEach {
                         it.value.forEach { item ->
@@ -161,6 +166,18 @@ class ChatViewModel @Inject constructor(
         databaseRepository.pushMessage(roomId, msg)
         databaseRepository.pushRoomIdToUser(roomId, chatWithUserId!!)
         databaseRepository.pushRoomIdToUser(roomId, currentUser!!.id)
+    }
+
+    private fun verifyMessage(str: String): Boolean {
+        return str != " " && str != ""
+    }
+
+    private fun handleMessage(str: String): String {
+        val words = str.split(" ")
+        val result = words.filter { it != "" }.map {
+            it.replace(" ", "")
+        }
+        return result.joinToString(" ")
     }
 
 }
