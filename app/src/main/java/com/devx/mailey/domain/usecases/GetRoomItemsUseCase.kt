@@ -1,6 +1,5 @@
 package com.devx.mailey.domain.usecases
 
-import android.util.Log
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
