@@ -54,6 +54,7 @@ class HomeFragment : Fragment() {
 
             viewModel.rooms.observe(viewLifecycleOwner){
                 roomsAdapter.rooms = it.toMutableList()
+                roomsAdapter.notifyDataSetChanged()
             }
 
         }
