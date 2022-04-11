@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.devx.mailey.databinding.FragmentRegisterBinding
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
@@ -31,21 +31,19 @@ class RegisterFragment : Fragment(), AuthStateObserver{
     }
 
     override fun authStateObserver() {
-        viewModel.resultState.observe(viewLifecycleOwner) {
+        viewModel.networkResult.observe(viewLifecycleOwner) {
+            binding.registerProgressBar.visibility = View.VISIBLE
             when (it) {
-                is ResultState.Success -> {
+                is NetworkResult.Success -> {
                     binding.registerProgressBar.visibility = View.GONE
                     val intent = Intent(requireContext(), CoreActivity::class.java)
                     requireContext().startActivity(intent)
                     activity?.finish()
                 }
-                is ResultState.Error -> {
+                is NetworkResult.Error -> {
                     binding.registerProgressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
 
-                }
-                is ResultState.Loading -> {
-                    binding.registerProgressBar.visibility = View.VISIBLE
                 }
             }
         }

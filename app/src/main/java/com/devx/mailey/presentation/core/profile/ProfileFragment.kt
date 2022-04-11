@@ -22,7 +22,7 @@ import com.devx.mailey.util.Constants
 import com.devx.mailey.util.FirebaseConstants.ABOUT
 import com.devx.mailey.util.FirebaseConstants.FULL_NAME
 import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -64,8 +64,9 @@ class ProfileFragment : Fragment() {
 
     private fun loadImageObserver() {
         viewModel.onLoadImage.observe(viewLifecycleOwner) { res ->
+            binding.profileProgressBar.visibility = View.VISIBLE
             when (res) {
-                is ResultState.Success -> {
+                is NetworkResult.Success -> {
                     viewModel.addImageToUser(res.result.toString())
                     Glide.with(this)
                         .load(res.result)
@@ -73,12 +74,9 @@ class ProfileFragment : Fragment() {
                         .into(binding.profileImage)
                     binding.profileProgressBar.visibility = View.GONE
                 }
-                is ResultState.Error -> {
+                is NetworkResult.Error -> {
                     Toast.makeText(requireContext(), res.msg, Toast.LENGTH_LONG).show()
                     binding.profileProgressBar.visibility = View.GONE
-                }
-                is ResultState.Loading -> {
-                    binding.profileProgressBar.visibility = View.VISIBLE
                 }
             }
         }

@@ -10,11 +10,14 @@ import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.RoomItem
 import com.devx.mailey.domain.usecases.GetRoomItemsUseCase
+import com.devx.mailey.util.Resource
 import com.devx.mailey.util.getLastMessage
 import com.devx.mailey.util.getLastMessageTimestamp
 import com.devx.mailey.util.getUserImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,9 +32,16 @@ class HomeViewModel @Inject constructor(private val getRoomItemsUseCase: GetRoom
     val progressBar: LiveData<Int>
         get() = _progressBar
 
-    fun getUserRooms(user: User) = viewModelScope.launch {
-       val res = getRoomItemsUseCase.getRoomItems(user)
-        _rooms.postValue(res)
-        _progressBar.postValue(View.GONE)
+    fun getUserRooms(user: User) {
+      getRoomItemsUseCase.getRoomItems(user).onEach {
+           when(it){
+              is Resource.Loading -> {}
+              is Resource.Success -> {
+                  _rooms.postValue(it.data!!)
+                  _progressBar.postValue(View.GONE)
+              }
+               is Resource.Error ->{_progressBar.postValue(View.GONE)}
+           }
+       }.launchIn(viewModelScope)
     }
 }

@@ -5,7 +5,15 @@ import com.google.firebase.storage.StorageReference
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class User(var fullName: String, val email:String, val id:String, val rooms:HashMap<String,String>?, val imagesUrl: MutableList<String>, var about: String = "", var mobilePhone: String = "") :
+data class User(
+    var fullName: String,
+    val email: String,
+    val id: String,
+    var rooms: HashMap<String, String>?,
+    val imagesUrl: MutableList<String>,
+    var about: String = "",
+    var mobilePhone: String = ""
+) :
     Parcelable {
     constructor() : this("", "", "", null, mutableListOf())
 }

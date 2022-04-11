@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import kotlinx.coroutines.flow.Flow
 
 interface DatabaseService {
@@ -15,11 +15,11 @@ interface DatabaseService {
 
     suspend fun getUserById(id:String):User
 
-    suspend fun getRoomById(roomId: String): Room
+    suspend fun getRoomById(roomId: String): NetworkResult<Room>
 
     suspend fun createRoom(room: Room): Boolean
 
-    suspend fun searchUserByName(str: String): Flow<ResultState<List<User>>>
+    suspend fun searchUserByName(str: String): Flow<NetworkResult<List<User>>>
 
     suspend fun pushRoomIdToUser(roomId: String, userId: String)
 
@@ -27,8 +27,9 @@ interface DatabaseService {
 
     fun addMessageListener(liveData: MutableLiveData<MutableMap<String, Message>>, roomId: String)
 
-    suspend fun onRoomsChanged(userId: String): LiveData<String>
+    suspend fun onRoomsChanged(userId: String): LiveData<HashMap<String, String>>
     suspend fun onRoomChanged(userId: String, roomId: String): LiveData<String>
+    suspend fun roomExists(roomId: String):NetworkResult<Boolean>
 
 //    suspend fun pushRoomChanged(userId: String, roomId: String)
 

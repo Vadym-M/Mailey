@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.devx.mailey.data.repository.AuthRepository
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.data.repository.StorageRepository
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,8 +25,8 @@ class ProfileViewModel @Inject constructor(
     val onSignOut: LiveData<Boolean>
         get() = _onSignOut
 
-    private val _onLoadImage = MutableLiveData<ResultState<String>>()
-    val onLoadImage: LiveData<ResultState<String>>
+    private val _onLoadImage = MutableLiveData<NetworkResult<String>>()
+    val onLoadImage: LiveData<NetworkResult<String>>
         get() = _onLoadImage
 
     fun signOut() {
@@ -36,7 +36,7 @@ class ProfileViewModel @Inject constructor(
     fun loadImage(uri: Uri?) = viewModelScope.launch {
         uri?.let { it ->
             storageRepository.loadImage(it).collect { state ->
-                _onLoadImage.postValue(state as ResultState<String>)
+                _onLoadImage.postValue(state as NetworkResult<String>)
             }
         }
     }

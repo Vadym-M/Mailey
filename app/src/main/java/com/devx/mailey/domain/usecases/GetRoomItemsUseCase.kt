@@ -1,33 +1,41 @@
 package com.devx.mailey.domain.usecases
 
+import android.util.Log
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.RoomItem
+import com.devx.mailey.util.Resource
 import com.devx.mailey.util.getLastMessage
 import com.devx.mailey.util.getLastMessageTimestamp
 import com.devx.mailey.util.getUserImage
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetRoomItemsUseCase @Inject constructor(private val databaseRepository: DatabaseRepository) {
 
 
-    suspend fun getRoomItems(user: User): List<RoomItem> {
-        databaseRepository.getRooms().let {
-            val roomsLocal = databaseRepository.getRooms()
-            if (roomsLocal.isNotEmpty()) {
-                return mapToRoomItems(roomsLocal, user)
-            } else {
-                return withContext(Dispatchers.IO) {
-                    val roomsNetwork =
-                        user.rooms?.map { async { databaseRepository.getRoomById(it.key) } }
-                            ?.awaitAll()
-                    return@withContext mapToRoomItems(roomsNetwork ?: emptyList(), user)
+    fun getRoomItems(user: User): Flow<Resource<List<RoomItem>>> = flow {
+        emit(Resource.Loading(null))
+        try {
+            val rooms = withContext(Dispatchers.IO) {
+                return@withContext user.rooms?.map { async { databaseRepository.getRoomById(it.key).result!! } }
+                    ?.awaitAll()?.toMutableList()
 
-                }
             }
+            rooms?.sortWith(compareBy {
+                val test = it.messages.values.toMutableList()
+                test.sortWith(compareBy { i -> i.timestamp })
+                test.last().timestamp
+            })
+            rooms?.reverse()
+            emit(Resource.Success(mapToRoomItems((rooms ?: emptyList()), user)))
+        }catch (e:Exception){
+            emit(Resource.Error(e.message))
         }
+
     }
 
     private suspend fun getUserUrl(userId: String): String {
@@ -36,13 +44,13 @@ class GetRoomItemsUseCase @Inject constructor(private val databaseRepository: Da
         }
     }
 
-    private suspend fun mapToRoomItems(rooms: List<Room>, user: User): List<RoomItem> {
+    private suspend fun mapToRoomItems(rooms: List<Room?>, user: User): List<RoomItem> {
         val newList = mutableListOf<RoomItem>()
         for (i in rooms.indices) {
-            if (rooms[i].firstUserId != user.id) {
-                newList.add(createRoomItemWithFirstUser(rooms[i]))
+            if (rooms[i]?.firstUserId != user.id) {
+                newList.add(createRoomItemWithFirstUser(rooms[i]!!))
             } else {
-                newList.add(createRoomItemWithSecondUser(rooms[i]))
+                newList.add(createRoomItemWithSecondUser(rooms[i]!!))
             }
 
         }

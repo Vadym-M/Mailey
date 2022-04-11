@@ -1,7 +1,6 @@
 package com.devx.mailey.data.firebase.impl
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.AuthService
@@ -18,8 +17,8 @@ import com.devx.mailey.util.FirebaseConstants.MESSAGES
 import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
 import com.devx.mailey.util.FirebaseConstants.ROOMS
 import com.devx.mailey.util.FirebaseConstants.USERS
-import com.devx.mailey.util.ResultState
-import com.devx.mailey.util.toDate
+import com.devx.mailey.util.NetworkResult
+import com.devx.mailey.util.safeCall
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -30,6 +29,7 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -39,8 +39,8 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
     private val database: DatabaseReference by lazy { Firebase.database.reference }
     private val storageRef: StorageReference by lazy { Firebase.storage.reference }
 
-    private val _onRoomsChanged = MutableLiveData<String>()
-    private val onRoomsChanged: LiveData<String>
+    private val _onRoomsChanged = MutableLiveData<HashMap<String, String>>()
+    private val onRoomsChanged: LiveData<HashMap<String, String>>
         get() = _onRoomsChanged
     private val _roomListener = MutableLiveData<String>()
     private val roomListener: LiveData<String>
@@ -52,9 +52,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         fullName: String,
         email: String,
         password: String
-    ): Flow<ResultState<AuthResult>> = flow {
-
-        emit(ResultState.Loading(null))
+    ): Flow<NetworkResult<AuthResult>> = flow {
         try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             result.user?.uid.let { id ->
@@ -68,21 +66,20 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
                 database.child("users").child(id.toString()).setValue(user)
             }.await()
             currentUserRef = database.child(USERS).child(firebaseAuth.currentUser!!.uid)
-            emit(ResultState.Success(result))
+            emit(NetworkResult.Success(result))
         } catch (e: Exception) {
-            emit(ResultState.Error(e.message))
+            emit(NetworkResult.Error(e.message))
         }
     }
 
-    override suspend fun login(email: String, password: String): Flow<ResultState<AuthResult>> =
+    override suspend fun login(email: String, password: String): Flow<NetworkResult<AuthResult>> =
         flow {
-            emit(ResultState.Loading(null))
             try {
                 val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
                 currentUserRef = database.child(USERS).child(firebaseAuth.currentUser!!.uid)
-                emit(ResultState.Success(result))
+                emit(NetworkResult.Success(result))
             } catch (e: Exception) {
-                emit(ResultState.Error(e.message))
+                emit(NetworkResult.Error(e.message))
             }
         }
 
@@ -102,17 +99,16 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         }
     }
 
-    override suspend fun loadImage(uri: Uri): Flow<ResultState<String>> = flow {
+    override suspend fun loadImage(uri: Uri): Flow<NetworkResult<String>> = flow {
         firebaseAuth.currentUser?.let { user ->
-            emit(ResultState.Loading(null))
             try {
                 val ref = storageRef.child(user.uid).child(uri.lastPathSegment.toString())
                 ref.putFile(uri).await()
                 val url = ref.downloadUrl.await().toString()
-                emit(ResultState.Success(url))
+                emit(NetworkResult.Success(url))
 
             } catch (e: Exception) {
-                emit(ResultState.Error(e.message))
+                emit(NetworkResult.Error(e.message))
             }
 
         }
@@ -135,9 +131,15 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         return FirebaseUsers.refUserId(id).get().await().getValue(User::class.java)!!
     }
 
-    override suspend fun getRoomById(roomId: String): Room {
-        return FirebaseRoom.ref(roomId).get().await().getValue(Room::class.java)!!
-
+    override suspend fun getRoomById(roomId: String): NetworkResult<Room> {
+      return try {
+           val result = withContext(Dispatchers.Default){
+               FirebaseRoom.ref(roomId).get().await().getValue(Room::class.java)
+           }
+           NetworkResult.Success(result!!)
+       }catch (e:Exception){
+          NetworkResult.Error(e.message)
+       }
     }
 
     override suspend fun createRoom(room: Room): Boolean {
@@ -145,8 +147,7 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         return true
     }
 
-    override suspend fun searchUserByName(str: String): Flow<ResultState<List<User>>> = flow {
-        emit(ResultState.Loading(null))
+    override suspend fun searchUserByName(str: String): Flow<NetworkResult<List<User>>> = flow {
         try {
             val list = mutableListOf<User>()
             val response = FirebaseUsers.ref().get().await().children
@@ -156,9 +157,9 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
                     list.add(user)
                 }
             }
-            emit(ResultState.Success(list))
+            emit(NetworkResult.Success(list))
         } catch (e: Exception) {
-            emit(ResultState.Error(e.message))
+            emit(NetworkResult.Error(e.message))
         }
     }
 
@@ -206,31 +207,19 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
             })
     }
 
-    override suspend fun onRoomsChanged(userId: String): LiveData<String>{
-        FirebaseUsers.refUserId(userId).child(ROOMS)
-            .addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                    val key = snapshot.key
-                    key?.let{
-                        _onRoomsChanged.postValue(key!!)}
-                }
+    override suspend fun onRoomsChanged(userId: String): LiveData<HashMap<String, String>> {
+        FirebaseUsers.refUserId(userId).child(ROOMS).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val data = hashMapOf<String, String>()
+                snapshot.children.forEach{
+                    data[it.key.toString()] = it.value.toString() }
+                    _onRoomsChanged.postValue(data)}
 
-                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                    val key = snapshot.key
-                    key?.let{
-                        _onRoomsChanged.postValue(key!!)}
-                }
 
-                override fun onChildRemoved(snapshot: DataSnapshot) {
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
 
-                }
-
-                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                }
-            })
         return onRoomsChanged
     }
 
@@ -248,11 +237,13 @@ object FirebaseSource : AuthService, StorageService, DatabaseService {
         return roomListener
     }
 
-//    override suspend fun pushRoomChanged(userId: String, roomId: String) {
-//        val key = FirebaseUsers.refUserId(userId).child("updatedRooms").push().key
-//        val value = mapOf("/users/$userId/updatedRooms/$roomId" to key)
-//        database.updateChildren(value)
-//    }
+    override suspend fun roomExists(roomId: String): NetworkResult<Boolean> {
+        return try {
+            NetworkResult.Success(FirebaseRoom.ref(roomId).get().await().exists())
+        }catch (e: Exception){
+            NetworkResult.Error(e.message)
+        }
+    }
 
     fun getDatabaseRef(): DatabaseReference{
         return database

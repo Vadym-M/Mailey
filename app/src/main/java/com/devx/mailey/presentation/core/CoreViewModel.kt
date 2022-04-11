@@ -1,5 +1,6 @@
 package com.devx.mailey.presentation.core
 
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,15 +11,12 @@ import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.domain.data.RoomItem
 import com.devx.mailey.domain.usecases.GetRoomItemsUseCase
-import com.devx.mailey.util.Event
-import com.devx.mailey.util.getLastMessage
-import com.devx.mailey.util.getLastMessageTimestamp
-import com.devx.mailey.util.getUserImage
+import com.devx.mailey.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +29,7 @@ class CoreViewModel @Inject constructor(
     private var userJob: Job? = null
     private var localRoomData: LocalRoom? = null
     private var fieldName: String? = null
+    private var userRooms = mutableListOf<String>()
 
     private val _user = MutableLiveData<User>()
     val user: LiveData<User>
@@ -87,14 +86,21 @@ class CoreViewModel @Inject constructor(
         return this.fieldName
     }
 
+
     private fun onRoomsChanged(userId: String) = viewModelScope.launch {
         val listener = databaseRepository.onRoomsChanged(userId)
-        listener.observeForever {
-            viewModelScope.launch {
-                databaseRepository.getRoomById(it)
-                val roomItems = getRoomItemsUseCase.getRoomItems(currentUser!!)
-                _roomsChanged.postValue(roomItems)
-            }
+        listener.observeForever { rooms ->
+            currentUser!!.rooms = rooms
+
+                getRoomItemsUseCase.getRoomItems(currentUser!!).onEach {
+                    when(it){
+                        is Resource.Loading ->{}
+                        is Resource.Success -> { _roomsChanged.postValue(it.data!!)}
+                        is Resource.Error -> {
+                           }
+                    }
+                }.launchIn(viewModelScope)
+
         }
     }
 }

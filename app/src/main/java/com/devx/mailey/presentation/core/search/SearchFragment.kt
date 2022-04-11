@@ -15,7 +15,7 @@ import com.devx.mailey.databinding.FragmentSearchBinding
 import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.presentation.core.adapters.UsersAdapter
 import com.devx.mailey.presentation.core.chat.ChatFragment
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -61,18 +61,16 @@ class SearchFragment : Fragment() {
             setHasFixedSize(true)
         }
         viewModel.searchedUsers.observe(viewLifecycleOwner) {
+            binding.searchProgressBar.visibility = View.VISIBLE
             when (it) {
-                is ResultState.Success -> {
+                is NetworkResult.Success -> {
                     binding.searchProgressBar.visibility = View.GONE
                     usersAdapter.users = it.result ?: emptyList()
 
                 }
-                is ResultState.Error -> {
+                is NetworkResult.Error -> {
                     Toast.makeText(requireContext(), it.msg, Toast.LENGTH_LONG).show()
                     binding.searchProgressBar.visibility = View.GONE
-                }
-                is ResultState.Loading -> {
-                    binding.searchProgressBar.visibility = View.VISIBLE
                 }
             }
         }

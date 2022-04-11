@@ -1,8 +1,14 @@
 package com.devx.mailey.util
 
 import android.annotation.SuppressLint
+import com.devx.mailey.data.firebase.impl.FirebaseSource
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.domain.data.ChatItems
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -46,4 +52,20 @@ fun MutableList<String>.getUserImage():String{
 fun MutableList<ChatItems<Message>>.sortByTimestamp(){
     this.sortWith(compareBy { it.data?.timestamp })
     this.reverse()
+}
+
+inline fun <T> safeEmit(crossinline block: () -> NetworkResult<T>): Flow<NetworkResult<T>> = flow {
+    try {
+        emit(block())
+    } catch (e: Exception) {
+        emit(NetworkResult.Error(e.message))
+    }
+}
+
+inline fun <T> safeCall(crossinline block: () -> NetworkResult<T>): NetworkResult<T> {
+    return try {
+        block()
+    } catch (e: Exception) {
+        NetworkResult.Error(e.message)
+    }
 }

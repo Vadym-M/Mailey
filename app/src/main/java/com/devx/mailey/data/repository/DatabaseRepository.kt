@@ -1,14 +1,12 @@
 package com.devx.mailey.data.repository
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devx.mailey.data.firebase.DatabaseService
 import com.devx.mailey.data.model.Message
 import com.devx.mailey.data.model.Room
 import com.devx.mailey.data.model.User
-import com.devx.mailey.util.FirebaseConstants.ABOUT
-import com.devx.mailey.util.FirebaseConstants.FULL_NAME
-import com.devx.mailey.util.FirebaseConstants.MOBILE_PHONE
+import com.devx.mailey.util.NetworkResult
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
@@ -18,7 +16,6 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
 
     private val userMutex = Mutex()
     private var currentUser: User? = null
-    private val roomList: MutableList<Room> = mutableListOf()
 
     override suspend fun getCurrentUserData(): User {
         if (currentUser == null) {
@@ -41,24 +38,13 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
 
     override suspend fun createRoom(room: Room) = databaseService.createRoom(room)
 
-    override suspend fun pushRoomIdToUser(roomId: String, userId: String) =
+    override suspend fun pushRoomIdToUser(roomId: String, userId: String) {
         databaseService.pushRoomIdToUser(roomId, userId)
+    }
 
-    override suspend fun getRoomById(roomId: String): Room {
-        val room = databaseService.getRoomById(roomId)
-        if (roomList.isNotEmpty()) {
-            roomList.forEachIndexed { index, item ->
-                if (item.roomId == room.roomId) {
-                    roomList[index] = room
-                }
-            }
-            if (!roomList.contains(room)) {
-                roomList.add(room)
-            }
-        } else {
-            roomList.add(room)
-        }
-        return room
+
+    override suspend fun getRoomById(roomId: String): NetworkResult<Room> {
+       return databaseService.getRoomById(roomId)
     }
 
     override suspend fun pushMessage(roomId: String, msg: Message) =
@@ -74,6 +60,7 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
         databaseService.onRoomsChanged(userId)
 
     override suspend fun onRoomChanged(userId: String, roomId: String) = databaseService.onRoomChanged(userId, roomId)
+    override suspend fun roomExists(roomId: String) = databaseService.roomExists(roomId)
 
     override fun changeUserFullName(value: String) {
         currentUser?.fullName = value
@@ -88,20 +75,5 @@ class DatabaseRepository @Inject constructor(private val databaseService: Databa
     override fun changeUserMobilePhone(value: String) {
         currentUser?.mobilePhone = value
         databaseService.changeUserMobilePhone(value)
-    }
-
-    fun getRooms(): MutableList<Room> {
-
-        roomList.sortWith(compareBy {
-            val test = it.messages.values.toMutableList()
-            test.sortWith(compareBy { i -> i.timestamp })
-            test.last().timestamp
-        })
-        roomList.reverse()
-        return roomList
-    }
-
-    fun getRoomFromCache(roomId: String): Room? {
-        return roomList.find { it.roomId == roomId }
     }
 }

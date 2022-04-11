@@ -8,7 +8,7 @@ import com.devx.mailey.data.model.User
 import com.devx.mailey.data.repository.DatabaseRepository
 import com.devx.mailey.domain.data.LocalRoom
 import com.devx.mailey.util.Event
-import com.devx.mailey.util.ResultState
+import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.util.getUserImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -20,8 +20,8 @@ class SearchViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
-    private val _searchedUsers = MutableLiveData<ResultState<List<User>>>()
-    val searchedUsers: LiveData<ResultState<List<User>>>
+    private val _searchedUsers = MutableLiveData<NetworkResult<List<User>>>()
+    val searchedUsers: LiveData<NetworkResult<List<User>>>
     get() = _searchedUsers
 
 
@@ -40,7 +40,7 @@ class SearchViewModel @Inject constructor(
             }
         } else {
             searchJob?.cancel()
-            _searchedUsers.postValue(ResultState.Success(emptyList()))
+            _searchedUsers.postValue(NetworkResult.Success(emptyList()))
         }
     }
 
