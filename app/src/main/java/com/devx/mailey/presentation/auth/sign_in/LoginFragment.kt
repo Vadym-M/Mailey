@@ -8,11 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import com.devx.mailey.R
 import com.devx.mailey.databinding.FragmentLoginBinding
 import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
+import com.devx.mailey.util.isValidEmail
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,6 +29,8 @@ class LoginFragment : Fragment(), AuthStateObserver {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
         authStateObserver()
         login()
+        emailEditTextStateObserver()
+
         return binding.root
     }
 
@@ -37,6 +41,15 @@ class LoginFragment : Fragment(), AuthStateObserver {
             viewModel.login(email, password)
         }
     }
+
+    private fun emailEditTextStateObserver() {
+        binding.emailLogin.editText?.setOnFocusChangeListener { view, b ->
+            val email = binding.emailLogin.editText?.text.toString()
+            binding.emailLogin.error =
+                if (!b && !email.isValidEmail()) getString(R.string.email_is_badly_formatted) else null
+        }
+    }
+
 
     override fun authStateObserver() {
         viewModel.networkResult.observe(viewLifecycleOwner) {
@@ -56,6 +69,4 @@ class LoginFragment : Fragment(), AuthStateObserver {
             }
         }
     }
-
-
 }

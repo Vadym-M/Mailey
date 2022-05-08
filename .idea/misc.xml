@@ -3,9 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/email.xml" value="0.2105" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_account_circle_outline.xml" value="0.2105" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_email_send_outline.xml" value="0.2315" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_help_circle_outline.xml" value="0.2105" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_keyboard_backspace.xml" value="0.2365" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2105" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/ic_magnify.xml" value="0.243" />
+        <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/drawable/lock.xml" value="0.2105" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_core.xml" value="0.23697916666666666" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Android Studio projects/Mailey/app/src/main/res/layout/activity_splash.xml" value="0.23697916666666666" />
