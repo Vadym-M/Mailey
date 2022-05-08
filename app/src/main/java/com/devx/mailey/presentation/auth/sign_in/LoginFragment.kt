@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.devx.mailey.R
 import com.devx.mailey.databinding.FragmentLoginBinding
@@ -14,6 +15,7 @@ import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
+import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.util.isValidEmail
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,6 +24,7 @@ class LoginFragment : Fragment(), AuthStateObserver {
 
     lateinit var binding: FragmentLoginBinding
     private val viewModel: AuthViewModel by viewModels()
+    private val coreViewModel: CoreViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,6 +33,7 @@ class LoginFragment : Fragment(), AuthStateObserver {
         authStateObserver()
         login()
         emailEditTextStateObserver()
+        onBackPressed()
 
         return binding.root
     }
@@ -67,6 +71,12 @@ class LoginFragment : Fragment(), AuthStateObserver {
 
                 }
             }
+        }
+    }
+
+    private fun onBackPressed() {
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
     }
 }
