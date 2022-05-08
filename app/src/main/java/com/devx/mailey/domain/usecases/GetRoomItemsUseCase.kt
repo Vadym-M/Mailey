@@ -47,37 +47,29 @@ class GetRoomItemsUseCase @Inject constructor(private val databaseRepository: Da
         val newList = mutableListOf<RoomItem>()
         for (i in rooms.indices) {
             if (rooms[i]?.firstUserId != user.id) {
-                newList.add(createRoomItemWithFirstUser(rooms[i]!!))
+                val url = getUserUrl(rooms[i]!!.firstUserId)
+                newList.add(RoomItem(
+                    rooms[i]!!.firstUserId,
+                    rooms[i]!!.roomId,
+                    url,
+                    rooms[i]!!.firstUserName,
+                    rooms[i]!!.messages.getLastMessage(user.id),
+                    rooms[i]!!.messages.getLastMessageTimestamp()
+                ))
             } else {
-                newList.add(createRoomItemWithSecondUser(rooms[i]!!))
+                val url = getUserUrl(rooms[i]!!.secondUserId)
+                newList.add(RoomItem(
+                    rooms[i]!!.secondUserId,
+                    rooms[i]!!.roomId,
+                    url,
+                    rooms[i]!!.secondUserName,
+                    rooms[i]!!.messages.getLastMessage(user.id),
+                    rooms[i]!!.messages.getLastMessageTimestamp()
+                ))
             }
 
         }
         return newList
-    }
-
-    private suspend fun createRoomItemWithFirstUser(room: Room): RoomItem {
-        val url = getUserUrl(room.firstUserId)
-        return RoomItem(
-            room.firstUserId,
-            room.roomId,
-            url,
-            room.firstUserName,
-            room.messages.getLastMessage(),
-            room.messages.getLastMessageTimestamp()
-        )
-    }
-
-    private suspend fun createRoomItemWithSecondUser(room: Room): RoomItem {
-        val url = getUserUrl(room.secondUserId)
-        return RoomItem(
-            room.secondUserId,
-            room.roomId,
-            url,
-            room.secondUserName,
-            room.messages.getLastMessage(),
-            room.messages.getLastMessageTimestamp()
-        )
     }
 
 }

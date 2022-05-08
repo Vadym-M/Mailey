@@ -34,10 +34,17 @@ fun Long.toDate():String{
     return format.format(date)
 }
 
-fun MutableMap<String, Message>.getLastMessage():String{
+fun MutableMap<String, Message>.getLastMessage(id:String):String{
     val list = this.values.toMutableList()
     list.sortWith(compareBy { it.timestamp })
-    return if(list.isEmpty()) "Empty list" else list.last().text!!
+    return if(list.isEmpty()){
+        "Empty list"
+    }else if(list.last().userId == id){
+        "You: " + list.last().text
+    }else{
+        list.last().text!!
+    }
+
 }
 fun MutableMap<String, Message>.getLastMessageTimestamp():String{
     val list = this.values.toMutableList()
