@@ -53,7 +53,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/login_rocket_image"
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:src="@drawable/ic_rocket_svgrepo_com"

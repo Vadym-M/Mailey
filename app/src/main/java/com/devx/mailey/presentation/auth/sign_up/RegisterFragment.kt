@@ -2,11 +2,13 @@ package com.devx.mailey.presentation.auth.sign_up
 
 import android.content.Intent
 import android.os.Bundle
+import android.transition.TransitionInflater
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.viewModels
 import com.devx.mailey.databinding.FragmentRegisterBinding
 import com.devx.mailey.util.NetworkResult
@@ -20,6 +22,13 @@ class RegisterFragment : Fragment(), AuthStateObserver{
 
     private lateinit var binding: FragmentRegisterBinding
     private val viewModel: AuthViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = TransitionInflater.from(requireContext())
+            .inflateTransition(android.R.transition.move)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,6 +37,11 @@ class RegisterFragment : Fragment(), AuthStateObserver{
         register()
         authStateObserver()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        ViewCompat.setTransitionName(binding.registerRocketImage, "register_rocket_image")
     }
 
     override fun authStateObserver() {
