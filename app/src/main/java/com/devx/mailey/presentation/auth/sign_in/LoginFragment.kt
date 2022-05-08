@@ -14,6 +14,7 @@ import com.devx.mailey.databinding.FragmentLoginBinding
 import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
+import com.devx.mailey.presentation.auth.reset_pass.ResetPassFragment
 import com.devx.mailey.presentation.core.CoreActivity
 import com.devx.mailey.presentation.core.CoreViewModel
 import com.devx.mailey.util.isValidEmail
@@ -34,6 +35,7 @@ class LoginFragment : Fragment(), AuthStateObserver {
         login()
         emailEditTextStateObserver()
         onBackPressed()
+        resetPasswordBtnListener()
 
         return binding.root
     }
@@ -51,6 +53,15 @@ class LoginFragment : Fragment(), AuthStateObserver {
             val email = binding.emailLogin.editText?.text.toString()
             binding.emailLogin.error =
                 if (!b && !email.isValidEmail()) getString(R.string.email_is_badly_formatted) else null
+        }
+    }
+
+    private fun resetPasswordBtnListener(){
+        binding.forgotPassword.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.authFragmentContainer, ResetPassFragment())
+                .addToBackStack(null)
+                .commit()
         }
     }
 

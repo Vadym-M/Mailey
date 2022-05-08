@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
         android:paddingStart="50dp"
         android:paddingEnd="50dp"
-        android:paddingBottom="50dp"
+        android:paddingBottom="25dp"
         tools:context=".presentation.auth.sign_in.LoginFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -61,7 +61,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="@string/password"
         app:startIconDrawable="@drawable/lock"
         app:endIconMode="password_toggle"
         android:layout_marginBottom="40dp"
@@ -82,8 +82,8 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:hint="Email"
+        android:layout_marginBottom="5dp"
+        android:hint="@string/email"
         app:startIconDrawable="@drawable/email"
         app:endIconMode="clear_text"
         app:errorEnabled="true"
@@ -113,9 +113,11 @@
         android:id="@+id/loginSignInBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sign In"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="@string/sign_in"
         android:textAllCaps="false"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/forgot_password"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -129,5 +131,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/forgot_password"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/forgot_password"
+        android:textAllCaps="false"
+        android:textSize="12sp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
