@@ -23,22 +23,33 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/searchRecycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:id="@+id/frameLayout">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/searchRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         <ProgressBar
-            android:id="@+id/searchProgressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"/>
+                android:id="@+id/searchProgressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+        <ImageView
+                android:id="@+id/search_mag_icon"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:src="@drawable/ic_magnify"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:alpha="0.3"
+                />
 
     </FrameLayout>
 
