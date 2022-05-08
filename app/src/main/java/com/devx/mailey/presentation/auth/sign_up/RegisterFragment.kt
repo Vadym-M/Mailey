@@ -27,6 +27,7 @@ class RegisterFragment : Fragment(), AuthStateObserver{
         binding = FragmentRegisterBinding.inflate(inflater, container, false)
         register()
         authStateObserver()
+        onBackPressed()
         return binding.root
     }
 
@@ -59,5 +60,9 @@ class RegisterFragment : Fragment(), AuthStateObserver{
         }
     }
 
-
+    private fun onBackPressed() {
+        binding.backBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+    }
 }
