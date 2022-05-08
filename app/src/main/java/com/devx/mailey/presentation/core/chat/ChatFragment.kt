@@ -45,7 +45,9 @@ class ChatFragment : Fragment() {
         toastMessageListener()
         binding.sendBtn.setOnClickListener {
 
-            viewModel.sendMessage(binding.chatEditText.text.toString())
+            if(binding.chatEditText.text.toString().trim().isNotEmpty()) {
+                viewModel.sendMessage(binding.chatEditText.text.toString())
+            }
             binding.chatEditText.text.clear()
 
         }
