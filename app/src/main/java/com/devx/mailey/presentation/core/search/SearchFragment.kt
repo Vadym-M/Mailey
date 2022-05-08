@@ -65,6 +65,7 @@ class SearchFragment : Fragment() {
             when (it) {
                 is NetworkResult.Success -> {
                     binding.searchProgressBar.visibility = View.GONE
+                    binding.searchMagIcon.visibility = View.GONE
                     usersAdapter.users = it.result ?: emptyList()
 
                 }
