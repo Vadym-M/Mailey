@@ -62,7 +62,7 @@ class LoginFragment : Fragment(), AuthStateObserver {
         }
     }
 
-    private fun emailEditTextStateObserver() {
+    override fun emailEditTextStateObserver() {
         binding.emailLogin.editText?.setOnFocusChangeListener { view, b ->
             val email = binding.emailLogin.editText?.text.toString()
             binding.emailLogin.error =

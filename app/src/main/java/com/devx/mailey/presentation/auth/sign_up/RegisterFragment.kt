@@ -10,11 +10,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.viewModels
+import com.devx.mailey.R
 import com.devx.mailey.databinding.FragmentRegisterBinding
 import com.devx.mailey.util.NetworkResult
 import com.devx.mailey.presentation.auth.AuthViewModel
 import com.devx.mailey.presentation.auth.AuthStateObserver
 import com.devx.mailey.presentation.core.CoreActivity
+import com.devx.mailey.util.isValidEmail
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -37,6 +39,7 @@ class RegisterFragment : Fragment(), AuthStateObserver{
         register()
         authStateObserver()
         onBackPressed()
+        emailEditTextStateObserver()
         return binding.root
     }
 
@@ -64,11 +67,21 @@ class RegisterFragment : Fragment(), AuthStateObserver{
         }
     }
 
+    override fun emailEditTextStateObserver() {
+        binding.emailRegister.editText?.setOnFocusChangeListener { view, b ->
+            val email = binding.emailRegister.editText?.text.toString()
+            binding.emailRegister.error =
+                if (!b && !email.isValidEmail()) getString(R.string.email_is_badly_formatted) else null
+        }
+    }
+
     private fun register(){
         binding.btnRegister.setOnClickListener {
             val fullName = binding.fullNameRegister.editText?.text.toString()
             val email = binding.emailRegister.editText?.text.toString()
             val password = binding.passwordRegister.editText?.text.toString()
+
+            binding.registerProgressBar.visibility = View.VISIBLE
 
             viewModel.register(email = email, password = password, fullName = fullName)
         }

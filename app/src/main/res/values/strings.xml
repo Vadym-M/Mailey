@@ -12,4 +12,5 @@
     <string name="reset_password">Reset Password</string>
     <string name="enter_your_email">Enter your Email</string>
     <string name="sign_in_to_your_account">Sign In to your account</string>
+    <string name="sign_up_your_account">Sign Up your account</string>
 </resources>
