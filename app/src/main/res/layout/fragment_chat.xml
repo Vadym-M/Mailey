@@ -101,6 +101,14 @@
         android:layout_marginBottom="5dp"
         android:orientation="horizontal">
 
+        <Button
+            android:id="@+id/locationBtn"
+            style="@style/Widget.App.Button.OutlinedButton.IconOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:icon="@drawable/map_marker" />
+
         <EditText
             android:id="@+id/chatEditText"
             android:layout_width="0dp"
