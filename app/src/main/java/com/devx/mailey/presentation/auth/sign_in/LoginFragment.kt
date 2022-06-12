@@ -59,6 +59,7 @@ class LoginFragment : Fragment(), AuthStateObserver {
             val email = binding.emailLogin.editText?.text.toString()
             val password = binding.passwordLogin.editText?.text.toString()
             viewModel.login(email, password)
+            binding.loginProgressBar.visibility = View.VISIBLE
         }
     }
 
@@ -82,7 +83,6 @@ class LoginFragment : Fragment(), AuthStateObserver {
 
     override fun authStateObserver() {
         viewModel.networkResult.observe(viewLifecycleOwner) {
-            binding.loginProgressBar.visibility = View.VISIBLE
             when (it) {
                 is NetworkResult.Success -> {
                     binding.loginProgressBar.visibility = View.GONE
