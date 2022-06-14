@@ -53,6 +53,11 @@ class HomeFragment : Fragment() {
             setHasFixedSize(true)
 
             viewModel.rooms.observe(viewLifecycleOwner){
+                if(it.isEmpty()){
+                    binding.homeEmptyScreen.visibility = View.VISIBLE
+                }else{
+                    binding.homeEmptyScreen.visibility = View.GONE
+                }
                 roomsAdapter.rooms = it.toMutableList()
                 roomsAdapter.notifyDataSetChanged()
             }
@@ -63,6 +68,11 @@ class HomeFragment : Fragment() {
 
     private fun onRoomChanged(){
         coreViewModel.roomsChanged.observe(viewLifecycleOwner){
+            if(it.isEmpty()){
+                binding.homeEmptyScreen.visibility = View.VISIBLE
+            }else{
+                binding.homeEmptyScreen.visibility = View.GONE
+            }
             roomsAdapter.rooms = it
             roomsAdapter.notifyDataSetChanged()
         }

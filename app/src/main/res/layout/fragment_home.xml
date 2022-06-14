@@ -63,10 +63,23 @@
         android:layout_marginTop="2dp"
         android:indeterminate="true" />
     <!-- Note: A RecyclerView can also be used -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/homeRecycler"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/homeRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+        <TextView
+            android:id="@+id/homeEmptyScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="You don't have any active chats"/>
+    </FrameLayout>
+
 
 </LinearLayout>
